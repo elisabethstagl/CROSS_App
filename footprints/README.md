@@ -5,7 +5,7 @@ Welcome to the team project repository for the Cross-Platform Development course
 ## Team Details
 * **Student 1**: Elisabeth Stagl (@elisabethstagl)
 * **Student 2**: Valeriia Sineva (@vs1603)
-* **App Name**: [Your App Concept Name]
+* **App Name**: Footprints
 
 ---
 
