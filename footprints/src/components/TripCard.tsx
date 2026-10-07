@@ -1,7 +1,13 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/Card";
+import {
+  BorderRadius,
+  Colors,
+  IconSize,
+  Spacing,
+} from "@/constants/theme";
 import { Trip } from "@/types/Trip";
 
 type TripCardProps = {
@@ -11,10 +17,15 @@ type TripCardProps = {
   onDelete: () => void;
 };
 
-export function TripCard({ trip, onPress, onEdit, onDelete }: TripCardProps) {
+export function TripCard({
+  trip,
+  onPress,
+  onEdit,
+  onDelete,
+}: TripCardProps) {
   return (
     <Card onPress={onPress}>
-      <View style={styles.header}>
+      <View style={styles.container}>
         <View style={styles.info}>
           <Text style={styles.name}>{trip.name}</Text>
 
@@ -24,12 +35,28 @@ export function TripCard({ trip, onPress, onEdit, onDelete }: TripCardProps) {
         </View>
 
         <View style={styles.actions}>
-          <Pressable style={styles.actionButton} onPress={onEdit} hitSlop={8}>
-            <MaterialIcons name="edit" size={22} color="#333" />
+          <Pressable
+            style={styles.actionButton}
+            onPress={onEdit}
+            hitSlop={8}
+          >
+            <MaterialIcons
+              name="edit"
+              size={IconSize.medium}
+              color={Colors.light.text}
+            />
           </Pressable>
 
-          <Pressable style={styles.actionButton} onPress={onDelete} hitSlop={8}>
-            <MaterialIcons name="delete-outline" size={22} color="#c62828" />
+          <Pressable
+            style={styles.actionButton}
+            onPress={onDelete}
+            hitSlop={8}
+          >
+            <MaterialIcons
+              name="delete-outline"
+              size={IconSize.medium}
+              color={Colors.light.error}
+            />
           </Pressable>
         </View>
       </View>
@@ -38,9 +65,8 @@ export function TripCard({ trip, onPress, onEdit, onDelete }: TripCardProps) {
 }
 
 const styles = StyleSheet.create({
-  header: {
+  container: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
   },
 
@@ -51,26 +77,27 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontWeight: "600",
-    marginBottom: 6,
+    color: Colors.light.text,
+    marginBottom: Spacing.one,
   },
 
   date: {
     fontSize: 14,
-    color: "#666",
+    color: Colors.light.textSecondary,
   },
 
   actions: {
     flexDirection: "row",
-    gap: 8,
-    marginLeft: 12,
+    gap: Spacing.two,
+    marginLeft: Spacing.three,
   },
 
   actionButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f2f2f2",
+    backgroundColor: Colors.light.surfaceVariant,
   },
 });

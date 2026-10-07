@@ -1,6 +1,12 @@
 import { ReactNode } from "react";
 import { Pressable, StyleSheet } from "react-native";
 
+import {
+  BorderRadius,
+  Colors,
+  Spacing,
+} from "@/constants/theme";
+
 type CardProps = {
   children: ReactNode;
   onPress?: () => void;
@@ -11,7 +17,7 @@ export function Card({ children, onPress }: CardProps) {
     <Pressable
       style={({ pressed }) => [
         styles.card,
-        pressed && onPress ? styles.pressed : undefined,
+        pressed && onPress && styles.pressed,
       ]}
       onPress={onPress}
       disabled={!onPress}
@@ -23,12 +29,13 @@ export function Card({ children, onPress }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "white",
-    padding: 18,
-    borderRadius: 14,
+    backgroundColor: Colors.light.surface,
+    padding: Spacing.three,
+    borderRadius: BorderRadius.large,
+
     elevation: 2,
 
-    shadowColor: "#000",
+    shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -38,6 +45,6 @@ const styles = StyleSheet.create({
   },
 
   pressed: {
-    opacity: 0.7,
+    opacity: 0.8,
   },
 });
