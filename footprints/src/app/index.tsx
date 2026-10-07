@@ -1,41 +1,80 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  Alert,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTripStore } from "@/store/tripStore";
+import { TripCard } from '@/components/TripCard';
+import { useTripStore } from '@/store/tripStore';
 
 export default function HomeScreen() {
   const trips = useTripStore((state) => state.trips);
+  const removeTrip = useTripStore((state) => state.removeTrip);
 
   const handleAddTrip = () => {
-    console.log("Add trip pressed");
+    console.log('Add trip pressed');
+  };
+
+  const handleDeleteTrip = (id: string, name: string) => {
+    Alert.alert(
+      'Delete Trip',
+      `Are you sure you want to delete "${name}"?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => removeTrip(id),
+        },
+      ]
+    );
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
+
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>My Trips</Text>
 
-          <Pressable style={styles.addButton} onPress={handleAddTrip}>
+          <Pressable
+            style={styles.addButton}
+            onPress={handleAddTrip}
+          >
             <Text style={styles.addButtonText}>+</Text>
           </Pressable>
         </View>
 
+        {/* Trip List */}
         <FlatList
           data={trips}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <View style={styles.tripCard}>
-              <Text style={styles.tripName}>{item.name}</Text>
-
-              <Text style={styles.tripDate}>
-                {item.startDate} – {item.endDate}
-              </Text>
-            </View>
+            <TripCard
+              trip={item}
+              onPress={() => {
+                console.log('Open trip:', item.id);
+              }}
+              onEdit={() => {
+                console.log('Edit trip:', item.id);
+              }}
+              onDelete={() => {
+                handleDeleteTrip(item.id, item.name);
+              }}
+            />
           )}
         />
+
       </View>
     </SafeAreaView>
   );
@@ -44,7 +83,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f7f7f7",
+    backgroundColor: '#f7f7f7',
   },
 
   container: {
@@ -54,60 +93,35 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 28,
   },
 
   title: {
     fontSize: 30,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 
   addButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#222",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#222',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   addButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 30,
     lineHeight: 32,
-    fontWeight: "300",
+    fontWeight: '300',
   },
 
   list: {
     gap: 14,
     paddingBottom: 20,
-  },
-
-  tripCard: {
-    backgroundColor: "white",
-    padding: 18,
-    borderRadius: 14,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-  },
-
-  tripName: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-
-  tripDate: {
-    fontSize: 14,
-    color: "#666",
   },
 });
