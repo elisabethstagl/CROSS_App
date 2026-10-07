@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 
 import { Card } from "@/components/Card";
 import { Trip } from "@/types/Trip";
@@ -23,12 +24,12 @@ export function TripCard({ trip, onPress, onEdit, onDelete }: TripCardProps) {
         </View>
 
         <View style={styles.actions}>
-          <Pressable style={styles.actionButton} onPress={onEdit}>
-            <Text style={styles.editText}>✎</Text>
+          <Pressable style={styles.actionButton} onPress={onEdit} hitSlop={8}>
+            <MaterialIcons name="edit" size={22} color="#333" />
           </Pressable>
 
-          <Pressable style={styles.actionButton} onPress={onDelete}>
-            <Text style={styles.deleteText}>×</Text>
+          <Pressable style={styles.actionButton} onPress={onDelete} hitSlop={8}>
+            <MaterialIcons name="delete-outline" size={22} color="#c62828" />
           </Pressable>
         </View>
       </View>
@@ -71,16 +72,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#f2f2f2",
-  },
-
-  editText: {
-    fontSize: 20,
-    color: "#333",
-  },
-
-  deleteText: {
-    fontSize: 25,
-    color: "#c62828",
-    lineHeight: 27,
   },
 });
