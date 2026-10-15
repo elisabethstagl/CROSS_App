@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { Trip } from "@/app/types/Trip";
-import { Step } from "@/app/types/Step";
+import { Trip } from "@/types/Trip";
+import { Step } from "@/types/Step";
 
 type TripStore = {
   trips: Trip[];
