@@ -7,15 +7,11 @@ import {
   Text,
   View,
 } from "react-native";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { TripCard } from "@/components/TripCard";
-import {
-  BorderRadius,
-  Colors,
-  IconSize,
-  Spacing,
-} from "@/constants/theme";
+import { BorderRadius, Colors, IconSize, Spacing } from "@/constants/theme";
 import { useTripStore } from "@/store/tripStore";
 
 export default function HomeScreen() {
@@ -23,32 +19,25 @@ export default function HomeScreen() {
   const removeTrip = useTripStore((state) => state.removeTrip);
 
   const handleAddTrip = () => {
-    console.log("Add trip pressed");
+    router.push("/trip/create");
   };
 
   const handleDeleteTrip = (id: string, name: string) => {
-    Alert.alert(
-      "Delete Trip",
-      `Are you sure you want to delete "${name}"?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => removeTrip(id),
-        },
-      ],
-    );
+    Alert.alert("Delete Trip", `Are you sure you want to delete "${name}"?`, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => removeTrip(id),
+      },
+    ]);
   };
 
   return (
-    <SafeAreaView
-      style={styles.safeArea}
-      edges={["top"]}
-    >
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>My Trips</Text>
