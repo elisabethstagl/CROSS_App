@@ -2,13 +2,9 @@ import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/Card";
-import {
-  BorderRadius,
-  Colors,
-  IconSize,
-  Spacing,
-} from "@/constants/theme";
+import { BorderRadius, Colors, IconSize, Spacing } from "@/constants/theme";
 import { Trip } from "@/types/Trip";
+import { formatDisplayDate } from "@/utils/date";
 
 type TripCardProps = {
   trip: Trip;
@@ -17,12 +13,7 @@ type TripCardProps = {
   onDelete: () => void;
 };
 
-export function TripCard({
-  trip,
-  onPress,
-  onEdit,
-  onDelete,
-}: TripCardProps) {
+export function TripCard({ trip, onPress, onEdit, onDelete }: TripCardProps) {
   return (
     <Card onPress={onPress}>
       <View style={styles.container}>
@@ -30,16 +21,14 @@ export function TripCard({
           <Text style={styles.name}>{trip.name}</Text>
 
           <Text style={styles.date}>
-            {trip.startDate} – {trip.endDate}
+            {formatDisplayDate(trip.startDate)}
+            {" – "}
+            {formatDisplayDate(trip.endDate)}
           </Text>
         </View>
 
         <View style={styles.actions}>
-          <Pressable
-            style={styles.actionButton}
-            onPress={onEdit}
-            hitSlop={8}
-          >
+          <Pressable style={styles.actionButton} onPress={onEdit} hitSlop={8}>
             <MaterialIcons
               name="edit"
               size={IconSize.medium}
@@ -47,11 +36,7 @@ export function TripCard({
             />
           </Pressable>
 
-          <Pressable
-            style={styles.actionButton}
-            onPress={onDelete}
-            hitSlop={8}
-          >
+          <Pressable style={styles.actionButton} onPress={onDelete} hitSlop={8}>
             <MaterialIcons
               name="delete-outline"
               size={IconSize.medium}

@@ -66,7 +66,10 @@ export default function HomeScreen() {
             <TripCard
               trip={item}
               onPress={() => {
-                console.log("Open trip:", item.id);
+                router.push({
+                  pathname: "/trip/[id]",
+                  params: { id: item.id },
+                });
               }}
               onEdit={() => {
                 console.log("Edit trip:", item.id);

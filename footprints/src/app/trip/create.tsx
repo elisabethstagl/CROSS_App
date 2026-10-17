@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTripStore } from "@/store/tripStore";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { Colors } from "@/constants/theme";
+import { formatDisplayDate } from "@/utils/date";
 
 function isValidDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -23,16 +24,6 @@ function isValidDate(value: string): boolean {
   return (
     !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
   );
-}
-
-function formatDisplayDate(value: string): string {
-  if (!value) {
-    return "TT.MM.JJJJ";
-  }
-
-  const [year, month, day] = value.split("-");
-
-  return `${day}.${month}.${year}`;
 }
 
 export default function CreateTripScreen() {
