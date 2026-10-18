@@ -72,7 +72,10 @@ export default function HomeScreen() {
                 });
               }}
               onEdit={() => {
-                console.log("Edit trip:", item.id);
+                router.push({
+                  pathname: "/trip/edit",
+                  params: { id: item.id },
+                });
               }}
               onDelete={() => {
                 handleDeleteTrip(item.id, item.name);
