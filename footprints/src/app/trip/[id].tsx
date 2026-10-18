@@ -1,12 +1,18 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { ScrollView, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { BorderRadius, Colors, IconSize } from "@/constants/theme";
 import { useTripStore } from "@/store/tripStore";
 import { formatDisplayDate } from "@/utils/date";
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import { Card } from "@/components/Card";
+import { StepCard } from "@/components/StepCard";
 
 export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,6 +23,21 @@ export default function TripDetailsScreen() {
   const allSteps = useTripStore((state) => state.steps);
 
   const steps = allSteps.filter((step) => step.tripId === id);
+  const removeStep = useTripStore((state) => state.removeStep);
+
+  function handleDeleteStep(stepId: string) {
+    Alert.alert("Delete step", "Are you sure you want to delete this step?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => removeStep(stepId),
+      },
+    ]);
+  }
   if (!trip) {
     return (
       <View style={styles.content}>
@@ -62,19 +83,25 @@ export default function TripDetailsScreen() {
           {formatDisplayDate(trip.endDate)}
         </Text>
 
-        {steps.length === 0 ? (
-          <Text style={styles.text}>No steps yet.</Text>
-        ) : (
-          steps.map((step) => (
-            <Card key={step.id}>
-              <Text style={styles.stepDate}>
-                {formatDisplayDate(step.date)}
-              </Text>
-
-              <Text style={styles.text}>{step.note}</Text>
-            </Card>
-          ))
-        )}
+        {steps.map((step) => (
+          <StepCard
+            key={step.id}
+            step={step}
+            onPress={() => {
+              router.push({
+                pathname: "/step/[id]",
+                params: { id: step.id },
+              });
+            }}
+            onEdit={() => {
+              router.push({
+                pathname: "/step/edit",
+                params: { id: step.id },
+              });
+            }}
+            onDelete={() => handleDeleteStep(step.id)}
+          />
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
@@ -126,11 +153,5 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     color: Colors.light.text,
-  },
-
-  stepDate: {
-    fontSize: 14,
-    color: Colors.light.textSecondary,
-    marginBottom: 8,
   },
 });
