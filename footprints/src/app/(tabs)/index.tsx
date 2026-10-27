@@ -1,4 +1,9 @@
+import { TripCard } from "@/components/TripCard";
+import { BorderRadius, Colors, IconSize, Spacing } from "@/constants/theme";
+import { useTripStore } from "@/store/tripStore";
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
+import { router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import {
   Alert,
   FlatList,
@@ -7,23 +12,19 @@ import {
   Text,
   View,
 } from "react-native";
-import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import { TripCard } from "@/components/TripCard";
-import { BorderRadius, Colors, IconSize, Spacing } from "@/constants/theme";
-import { useTripStore } from "@/store/tripStore";
 
 export default function HomeScreen() {
   const trips = useTripStore((state) => state.trips);
   const removeTrip = useTripStore((state) => state.removeTrip);
+  const db = useSQLiteContext();
 
   const handleAddTrip = () => {
     router.push("/trip/create");
   };
 
   const handleDeleteTrip = (id: string, name: string) => {
-    Alert.alert("Delete Trip", `Are you sure you want to delete "${name}"?`, [
+    Alert.alert("Delete trip", `Are you sure you want to delete "${name}"?`, [
       {
         text: "Cancel",
         style: "cancel",
@@ -31,7 +32,16 @@ export default function HomeScreen() {
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => removeTrip(id),
+        onPress: async () => {
+          try {
+            await removeTrip(id, db);
+          } catch {
+            Alert.alert(
+              "Delete failed",
+              "Could not delete the trip. Please try again.",
+            );
+          }
+        },
       },
     ]);
   };

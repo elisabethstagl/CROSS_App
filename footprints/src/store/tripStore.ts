@@ -1,14 +1,20 @@
-import { create } from "zustand";
-import { Trip } from "@/types/Trip";
+import {
+  deleteTripFromDatabase,
+  insertTrip,
+  updateTripInDatabase,
+} from "@/services/tripStorage";
 import { Step } from "@/types/Step";
+import { Trip } from "@/types/Trip";
+import type { SQLiteDatabase } from "expo-sqlite";
+import { create } from "zustand";
 
 type TripStore = {
   trips: Trip[];
   steps: Step[];
 
-  addTrip: (trip: Trip) => void;
-  updateTrip: (trip: Trip) => void;
-  removeTrip: (id: string) => void;
+  addTrip: (trip: Trip, db: SQLiteDatabase) => Promise<void>;
+  updateTrip: (trip: Trip, db: SQLiteDatabase) => Promise<void>;
+  removeTrip: (id: string, db: SQLiteDatabase) => Promise<void>;
 
   addStep: (step: Step) => void;
   updateStep: (step: Step) => void;
@@ -16,55 +22,47 @@ type TripStore = {
 
   getTripById: (id: string) => Trip | undefined;
   getStepsByTripId: (tripId: string) => Step[];
+
+  setStoredData: (trips: Trip[], steps: Step[]) => void;
 };
 
 export const useTripStore = create<TripStore>((set, get) => ({
-  trips: [
-    {
-      id: "1",
-      name: "Italy 2026",
-      startDate: "2026-07-10",
-      endDate: "2026-07-20",
-    },
-    {
-      id: "2",
-      name: "South Korea 2025",
-      startDate: "2025-09-01",
-      endDate: "2025-09-15",
-    },
-  ],
+  trips: [],
+  steps: [],
 
-  steps: [
-    {
-      id: "1",
-      tripId: "1",
-      name: "Colosseum",
-      note: "Visited the Colosseum",
-      date: "2026-07-12",
-      latitude: 41.8902,
-      longitude: 12.4922,
-    },
-  ],
+  setStoredData: (trips, steps) =>
+    set({
+      trips,
+      steps,
+    }),
 
-  addTrip: (trip) =>
+  addTrip: async (trip, db) => {
+    await insertTrip(db, trip);
+
     set((state) => ({
       trips: [...state.trips, trip],
-    })),
+    }));
+  },
 
-  updateTrip: (updatedTrip) =>
+  updateTrip: async (updatedTrip, db) => {
+    await updateTripInDatabase(db, updatedTrip);
+
     set((state) => ({
       trips: state.trips.map((trip) =>
         trip.id === updatedTrip.id ? updatedTrip : trip,
       ),
-    })),
+    }));
+  },
 
-  removeTrip: (id) =>
+  removeTrip: async (id, db) => {
+    await deleteTripFromDatabase(db, id);
+
     set((state) => ({
       trips: state.trips.filter((trip) => trip.id !== id),
 
-      // Also remove all steps belonging to this trip
       steps: state.steps.filter((step) => step.tripId !== id),
-    })),
+    }));
+  },
 
   addStep: (step) =>
     set((state) => ({

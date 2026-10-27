@@ -1,3 +1,7 @@
+import { Colors } from "@/constants/theme";
+import type { Trip } from "@/types/Trip";
+import { formatDisplayDate, isValidDate } from "@/utils/date";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useRef, useState } from "react";
 import {
   Button,
@@ -8,14 +12,11 @@ import {
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
-import { Colors } from "@/constants/theme";
-import type { Trip } from "@/types/Trip";
-import { formatDisplayDate, isValidDate } from "@/utils/date";
 
 type TripFormProps = {
   initialValues?: Omit<Trip, "id">;
-  onSubmit: (values: Omit<Trip, "id">) => void;
+
+  onSubmit: (values: Omit<Trip, "id">) => void | Promise<void>;
 };
 
 export function TripForm({ initialValues, onSubmit }: TripFormProps) {
@@ -24,6 +25,7 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
   const [endDate, setEndDate] = useState(initialValues?.endDate ?? "");
   const [error, setError] = useState<string | null>(null);
   const submitted = useRef(false);
+  const [saving, setSaving] = useState(false);
 
   function openDatePicker(field: "start" | "end") {
     const currentValue = field === "start" ? startDate : endDate;
@@ -54,7 +56,7 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
     });
   }
 
-  function handleSaveTrip() {
+  async function handleSaveTrip() {
     if (submitted.current) {
       return;
     }
@@ -77,12 +79,21 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
     }
 
     submitted.current = true;
+    setSaving(true);
+    setError(null);
 
-    onSubmit({
-      name: trimmedName,
-      startDate,
-      endDate,
-    });
+    try {
+      await onSubmit({
+        name: trimmedName,
+        startDate,
+        endDate,
+      });
+    } catch {
+      setError("Could not save the trip. Please try again.");
+
+      submitted.current = false;
+      setSaving(false);
+    }
   }
 
   return (
@@ -140,8 +151,9 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
         )}
 
         <Button
-          title="Save trip"
+          title={saving ? "Saving..." : "Save trip"}
           color={Colors.light.primary}
+          disabled={saving}
           onPress={handleSaveTrip}
         />
       </ScrollView>

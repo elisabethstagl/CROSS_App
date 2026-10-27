@@ -1,9 +1,9 @@
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import { Text, View } from "react-native";
-
 import { TripForm } from "@/components/TripForm";
 import { Colors } from "@/constants/theme";
 import { useTripStore } from "@/store/tripStore";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { Text, View } from "react-native";
 
 export default function EditTripScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -13,6 +13,7 @@ export default function EditTripScreen() {
   );
 
   const updateTrip = useTripStore((state) => state.updateTrip);
+  const db = useSQLiteContext();
 
   if (!trip) {
     return (
@@ -37,11 +38,14 @@ export default function EditTripScreen() {
       <TripForm
         key={trip.id}
         initialValues={trip}
-        onSubmit={(values) => {
-          updateTrip({
-            ...trip,
-            ...values,
-          });
+        onSubmit={async (values) => {
+          await updateTrip(
+            {
+              ...trip,
+              ...values,
+            },
+            db,
+          );
 
           if (router.canGoBack()) {
             router.back();
