@@ -12,13 +12,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TripCard } from "@/components/TripCard";
 import {
   BorderRadius,
-  Colors,
   IconSize,
   Spacing,
+  BottomTabInset,
+  FontSize,
 } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { useTripStore } from "@/store/tripStore";
 
 export default function HomeScreen() {
+  const colors = useTheme();
+
   const trips = useTripStore((state) => state.trips);
   const removeTrip = useTripStore((state) => state.removeTrip);
 
@@ -27,35 +31,32 @@ export default function HomeScreen() {
   };
 
   const handleDeleteTrip = (id: string, name: string) => {
-    Alert.alert(
-      "Delete Trip",
-      `Are you sure you want to delete "${name}"?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => removeTrip(id),
-        },
-      ],
-    );
+    Alert.alert("Delete Trip", `Are you sure you want to delete "${name}"?`, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => removeTrip(id),
+      },
+    ]);
   };
 
   return (
     <SafeAreaView
-      style={styles.safeArea}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>My Trips</Text>
+          <Text style={[styles.title, { color: colors.text }]}>My Trips</Text>
 
           <Pressable
             style={({ pressed }) => [
               styles.addButton,
+              { backgroundColor: colors.primary },
               pressed && styles.addButtonPressed,
             ]}
             onPress={handleAddTrip}
@@ -63,7 +64,7 @@ export default function HomeScreen() {
             <MaterialIcons
               name="add"
               size={IconSize.large}
-              color={Colors.light.onPrimary}
+              color={colors.onPrimary}
             />
           </Pressable>
         </View>
@@ -96,7 +97,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.light.background,
   },
 
   container: {
@@ -113,16 +113,15 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 30,
+    fontSize: FontSize.screenTitle,
     fontWeight: "700",
-    color: Colors.light.text,
+    marginBottom: Spacing.two,
   },
 
   addButton: {
     width: 56,
     height: 56,
     borderRadius: BorderRadius.large,
-    backgroundColor: Colors.light.primary,
     alignItems: "center",
     justifyContent: "center",
 
@@ -143,6 +142,6 @@ const styles = StyleSheet.create({
 
   list: {
     gap: Spacing.three,
-    paddingBottom: Spacing.four,
+    paddingBottom: BottomTabInset + Spacing.three,
   },
 });

@@ -1,25 +1,83 @@
 export interface Country {
-  cca3: string;
-  name: {
-    common: string;
-  };
-  capital?: string[];
+  code: string;
+  name: string;
+  flag: string;
+  capital: string;
   region: string;
-  flags: {
-    png: string;
+  subregion: string;
+  population: number;
+  languages: string[];
+  currency: string;
+  description: string;
+}
+
+interface ApiCountry {
+  uuid: string;
+  codes?: {
+    alpha_2?: string;
+  };
+  names?: {
+    common?: string;
+  };
+  flag?: {
+    emoji?: string;
+  };
+  capitals?: {
+    name: string;
+  }[];
+  region?: string;
+  subregion?: string;
+  population?: number;
+  languages?: {
+    name: string;
+  }[];
+  currencies?: {
+    name: string;
+    symbol?: string;
+  }[];
+  descriptions?: {
+    short?: string;
   };
 }
 
 export async function getCountries(): Promise<Country[]> {
-  const response = await fetch(
-    "https://restcountries.com/v3.1/all?fields=name,cca3,capital,region,flags",
-  );
+  const apiKey = process.env.EXPO_PUBLIC_REST_COUNTRIES_API_KEY;
 
-  if (!response.ok) {
-    throw new Error("Länder konnten nicht geladen werden");
+  if (!apiKey) {
+    throw new Error("API-Key fehlt");
   }
 
-  const countries: Country[] = await response.json();
+  const response = await fetch(
+    "https://api.restcountries.com/countries/v5?limit=20",
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    },
+  );
 
-  return countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.errors?.[0]?.message ?? "Länder konnten nicht geladen werden",
+    );
+  }
+
+  const countries: Country[] = (result.data.objects as ApiCountry[]).map(
+    (country) => ({
+      code: country.codes?.alpha_2 || country.uuid,
+      name: country.names?.common ?? "Unbekannt",
+      flag: country.flag?.emoji || "🌍",
+      capital: country.capitals?.[0]?.name ?? "Keine Angabe",
+      region: country.region || "Keine Angabe",
+      subregion: country.subregion || "Keine Angabe",
+      population: country.population ?? 0,
+      languages: country.languages?.map((language) => language.name) ?? [],
+      currency: country.currencies?.[0]?.name ?? "Keine Angabe",
+      description: country.descriptions?.short ?? "",
+    }),
+  );
+
+  return countries.sort((a, b) => a.name.localeCompare(b.name));
 }
