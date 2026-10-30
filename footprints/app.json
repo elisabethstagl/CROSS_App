@@ -32,8 +32,15 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Footprints to use your location.",
+          "locationWhenInUsePermission": "Allow Footprints to use your location"
+        }
       ]
-    ],
+      ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
