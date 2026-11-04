@@ -1,9 +1,9 @@
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import { Text, View } from "react-native";
-
 import { StepForm } from "@/components/StepForm";
 import { Colors } from "@/constants/theme";
 import { useTripStore } from "@/store/tripStore";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { Text, View } from "react-native";
 
 export default function CreateStepScreen() {
   const { tripId } = useLocalSearchParams<{ tripId?: string }>();
@@ -13,6 +13,8 @@ export default function CreateStepScreen() {
   );
 
   const addStep = useTripStore((state) => state.addStep);
+
+  const db = useSQLiteContext();
 
   if (!trip) {
     return (
@@ -29,12 +31,15 @@ export default function CreateStepScreen() {
 
       <StepForm
         key={trip.id}
-        onSubmit={(values) => {
-          addStep({
-            ...values,
-            id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-            tripId: trip.id,
-          });
+        onSubmit={async (values) => {
+          await addStep(
+            {
+              ...values,
+              id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+              tripId: trip.id,
+            },
+            db,
+          );
 
           router.dismissTo({
             pathname: "/trip/[id]",

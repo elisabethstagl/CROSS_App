@@ -1,11 +1,10 @@
+import { Colors } from "@/constants/theme";
+import { useTripStore } from "@/store/tripStore";
+import { formatDisplayDate } from "@/utils/date";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import { Colors } from "@/constants/theme";
-import { useTripStore } from "@/store/tripStore";
-import { formatDisplayDate } from "@/utils/date";
 
 export default function StepDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

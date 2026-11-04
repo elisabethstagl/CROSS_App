@@ -1,3 +1,6 @@
+import { Colors } from "@/constants/theme";
+import type { Step } from "@/types/Step";
+import { formatDisplayDate, toStorageDate } from "@/utils/date";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useRef, useState } from "react";
 import {
@@ -9,15 +12,12 @@ import {
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { Step } from "@/types/Step";
-import { Colors } from "@/constants/theme";
-import { formatDisplayDate, toStorageDate } from "@/utils/date";
 
 type StepFormValues = Pick<Step, "name" | "note" | "date">;
 
 type StepFormProps = {
   initialValues?: StepFormValues;
-  onSubmit: (values: StepFormValues) => void;
+  onSubmit: (values: StepFormValues) => void | Promise<void>;
 };
 
 export function StepForm({ initialValues, onSubmit }: StepFormProps) {
@@ -28,6 +28,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
   );
   const [error, setError] = useState<string | null>(null);
   const submitted = useRef(false);
+  const [saving, setSaving] = useState(false);
 
   function openDatePicker() {
     DateTimePickerAndroid.open({
@@ -52,7 +53,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
     });
   }
 
-  function handleSaveStep() {
+  async function handleSaveStep() {
     if (submitted.current) {
       return;
     }
@@ -64,20 +65,27 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
       return;
     }
 
-    const trimmedNote = note.trim();
-
     if (!date || Number.isNaN(date.getTime())) {
       setError("Please select a valid date.");
       return;
     }
 
     submitted.current = true;
+    setSaving(true);
+    setError(null);
 
-    onSubmit({
-      name: trimmedName,
-      note: trimmedNote,
-      date: toStorageDate(date),
-    });
+    try {
+      await onSubmit({
+        name: trimmedName,
+        note: note.trim(),
+        date: toStorageDate(date),
+      });
+    } catch {
+      setError("Could not save the step. Please try again.");
+
+      submitted.current = false;
+      setSaving(false);
+    }
   }
 
   return (
@@ -97,6 +105,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
             setError(null);
           }}
           maxLength={80}
+          editable={!saving}
         />
 
         <Text style={styles.label}>Note</Text>
@@ -110,6 +119,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           }}
           multiline
           maxLength={2000}
+          editable={!saving}
         />
 
         <Text style={styles.label}>Date</Text>
@@ -118,6 +128,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           accessibilityRole="button"
           accessibilityLabel="Select step date"
           onPress={openDatePicker}
+          disabled={saving}
           style={({ pressed }) => [styles.input, pressed && styles.pressed]}
         >
           <Text style={[styles.text, !date && styles.placeholder]}>
@@ -132,8 +143,9 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
         )}
 
         <Button
-          title="Save step"
+          title={saving ? "Saving..." : "Save step"}
           color={Colors.light.primary}
+          disabled={saving}
           onPress={handleSaveStep}
         />
       </ScrollView>

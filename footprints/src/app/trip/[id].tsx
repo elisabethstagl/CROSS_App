@@ -1,18 +1,19 @@
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import {
-  ScrollView,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  Alert,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StepCard } from "@/components/StepCard";
 import { BorderRadius, Colors, IconSize } from "@/constants/theme";
 import { useTripStore } from "@/store/tripStore";
 import { formatDisplayDate } from "@/utils/date";
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import { StepCard } from "@/components/StepCard";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,10 +35,22 @@ export default function TripDetailsScreen() {
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => removeStep(stepId),
+        onPress: async () => {
+          try {
+            await removeStep(stepId, db);
+          } catch {
+            Alert.alert(
+              "Delete failed",
+              "Could not delete the step. Please try again.",
+            );
+          }
+        },
       },
     ]);
   }
+
+  const db = useSQLiteContext();
+
   if (!trip) {
     return (
       <View style={styles.content}>

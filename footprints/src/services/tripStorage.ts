@@ -80,3 +80,59 @@ export async function deleteTripFromDatabase(
 ): Promise<void> {
   await db.runAsync("DELETE FROM trips WHERE id = ?", id);
 }
+
+export async function insertStep(
+  db: SQLiteDatabase,
+  step: Step,
+): Promise<void> {
+  await db.runAsync(
+    `INSERT INTO steps (
+      id, tripId, name, note, date,
+      latitude, longitude, photoUri
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    step.id,
+    step.tripId,
+    step.name,
+    step.note ?? "",
+    step.date,
+    step.latitude ?? null,
+    step.longitude ?? null,
+    step.photoUri ?? null,
+  );
+}
+
+export async function updateStepInDatabase(
+  db: SQLiteDatabase,
+  step: Step,
+): Promise<void> {
+  const result = await db.runAsync(
+    `UPDATE steps
+     SET name = ?,
+         note = ?,
+         date = ?,
+         latitude = ?,
+         longitude = ?,
+         photoUri = ?
+     WHERE id = ? AND tripId = ?`,
+    step.name,
+    step.note ?? "",
+    step.date,
+    step.latitude ?? null,
+    step.longitude ?? null,
+    step.photoUri ?? null,
+    step.id,
+    step.tripId,
+  );
+
+  if (result.changes === 0) {
+    throw new Error("Step not found in database.");
+  }
+}
+
+export async function deleteStepFromDatabase(
+  db: SQLiteDatabase,
+  id: string,
+): Promise<void> {
+  await db.runAsync("DELETE FROM steps WHERE id = ?", id);
+}
