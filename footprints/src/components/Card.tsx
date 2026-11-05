@@ -1,11 +1,12 @@
+
 import { ReactNode } from "react";
 import { Pressable, StyleSheet } from "react-native";
 
 import {
   BorderRadius,
-  Colors,
   Spacing,
 } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 
 type CardProps = {
   children: ReactNode;
@@ -13,10 +14,15 @@ type CardProps = {
 };
 
 export function Card({ children, onPress }: CardProps) {
+  const colors = useTheme();
+
   return (
     <Pressable
       style={({ pressed }) => [
         styles.card,
+        {
+          backgroundColor: colors.surface,
+        },
         pressed && onPress && styles.pressed,
       ]}
       onPress={onPress}
@@ -29,7 +35,6 @@ export function Card({ children, onPress }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.light.surface,
     padding: Spacing.three,
     borderRadius: BorderRadius.large,
 

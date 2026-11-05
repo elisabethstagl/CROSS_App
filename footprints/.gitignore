@@ -42,6 +42,10 @@ example
 /ios
 /android
 
+# .env
+.env
+.env.local
+
 # aus alltem gitgnore
 # node_modules/
 # .expo/

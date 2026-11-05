@@ -1,13 +1,19 @@
+
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { Card } from "@/components/Card";
 import {
   BorderRadius,
-  Colors,
   IconSize,
   Spacing,
 } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { Trip } from "@/types/Trip";
 
 type TripCardProps = {
@@ -23,39 +29,63 @@ export function TripCard({
   onEdit,
   onDelete,
 }: TripCardProps) {
+  const colors = useTheme();
+
   return (
     <Card onPress={onPress}>
       <View style={styles.container}>
         <View style={styles.info}>
-          <Text style={styles.name}>{trip.name}</Text>
+          <Text
+            style={[
+              styles.name,
+              { color: colors.text },
+            ]}
+          >
+            {trip.name}
+          </Text>
 
-          <Text style={styles.date}>
+          <Text
+            style={[
+              styles.date,
+              { color: colors.textSecondary },
+            ]}
+          >
             {trip.startDate} – {trip.endDate}
           </Text>
         </View>
 
         <View style={styles.actions}>
           <Pressable
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: colors.surfaceVariant,
+              },
+            ]}
             onPress={onEdit}
             hitSlop={8}
           >
             <MaterialIcons
               name="edit"
               size={IconSize.medium}
-              color={Colors.light.text}
+              color={colors.text}
             />
           </Pressable>
 
           <Pressable
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: colors.surfaceVariant,
+              },
+            ]}
             onPress={onDelete}
             hitSlop={8}
           >
             <MaterialIcons
               name="delete-outline"
               size={IconSize.medium}
-              color={Colors.light.error}
+              color={colors.error}
             />
           </Pressable>
         </View>
@@ -77,13 +107,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontWeight: "600",
-    color: Colors.light.text,
     marginBottom: Spacing.one,
   },
 
   date: {
     fontSize: 14,
-    color: Colors.light.textSecondary,
   },
 
   actions: {
@@ -98,6 +126,5 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.light.surfaceVariant,
   },
 });
