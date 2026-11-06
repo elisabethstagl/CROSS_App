@@ -1,14 +1,14 @@
 import {
   deleteStepFromDatabase,
   deleteTripFromDatabase,
-  insertStep,
   insertTrip,
-  updateStepInDatabase,
+  saveStepWithTripInDatabase,
   updateTripInDatabase,
 } from "@/services/tripStorage";
 import { Step } from "@/types/Step";
 import { Trip } from "@/types/Trip";
 import { sortByDate } from "@/utils/sortByDate";
+import { extendTripDates } from "@/utils/tripDates";
 import type { SQLiteDatabase } from "expo-sqlite";
 import { create } from "zustand";
 
@@ -74,20 +74,50 @@ export const useTripStore = create<TripStore>((set, get) => ({
   },
 
   addStep: async (step, db) => {
-    await insertStep(db, step);
+    const trip = get().getTripById(step.tripId);
+
+    if (!trip) {
+      throw new Error("Trip not found.");
+    }
+
+    const updatedTrip = extendTripDates(trip, step.date);
+
+    await saveStepWithTripInDatabase(db, step, trip, "create");
 
     set((state) => ({
+      trips: sortByDate(
+        state.trips.map((item) =>
+          item.id === updatedTrip.id ? updatedTrip : item,
+        ),
+        (item) => item.startDate,
+      ),
+
       steps: sortByDate([...state.steps, step], (item) => item.date),
     }));
   },
 
   updateStep: async (updatedStep, db) => {
-    await updateStepInDatabase(db, updatedStep);
+    const trip = get().getTripById(updatedStep.tripId);
+
+    if (!trip) {
+      throw new Error("Trip not found.");
+    }
+
+    const updatedTrip = extendTripDates(trip, updatedStep.date);
+
+    await saveStepWithTripInDatabase(db, updatedStep, trip, "update");
 
     set((state) => ({
+      trips: sortByDate(
+        state.trips.map((item) =>
+          item.id === updatedTrip.id ? updatedTrip : item,
+        ),
+        (item) => item.startDate,
+      ),
+
       steps: sortByDate(
-        state.steps.map((step) =>
-          step.id === updatedStep.id ? updatedStep : step,
+        state.steps.map((item) =>
+          item.id === updatedStep.id ? updatedStep : item,
         ),
         (item) => item.date,
       ),

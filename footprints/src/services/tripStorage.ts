@@ -1,5 +1,6 @@
 import type { Step } from "@/types/Step";
 import type { Trip } from "@/types/Trip";
+import { extendTripDates } from "@/utils/tripDates";
 import type { SQLiteDatabase } from "expo-sqlite";
 
 type StepRow = Omit<Step, "latitude" | "longitude" | "photoUri"> & {
@@ -135,4 +136,29 @@ export async function deleteStepFromDatabase(
   id: string,
 ): Promise<void> {
   await db.runAsync("DELETE FROM steps WHERE id = ?", id);
+}
+
+export async function saveStepWithTripInDatabase(
+  db: SQLiteDatabase,
+  step: Step,
+  trip: Trip,
+  mode: "create" | "update",
+): Promise<void> {
+  const updatedTrip = extendTripDates(trip, step.date);
+
+  const datesChanged =
+    updatedTrip.startDate !== trip.startDate ||
+    updatedTrip.endDate !== trip.endDate;
+
+  await db.withTransactionAsync(async () => {
+    if (datesChanged) {
+      await updateTripInDatabase(db, updatedTrip);
+    }
+
+    if (mode === "create") {
+      await insertStep(db, step);
+    } else {
+      await updateStepInDatabase(db, step);
+    }
+  });
 }

@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -144,11 +145,20 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           </Text>
         </Pressable>
 
-        {error && (
-          <Text accessibilityRole="alert" style={{ color: Colors.light.error }}>
-            {error}
-          </Text>
-        )}
+        <View style={{ minHeight: 48, justifyContent: "center" }}>
+          {error && (
+            <Text
+              accessibilityRole="alert"
+              style={{
+                color: Colors.light.error,
+                fontSize: 14,
+                lineHeight: 20,
+              }}
+            >
+              {error}
+            </Text>
+          )}
+        </View>
 
         <Button
           title={saving ? "Saving..." : "Save trip"}

@@ -1,5 +1,6 @@
 import { StepForm } from "@/components/StepForm";
 import { Colors } from "@/constants/theme";
+import { confirmTripDates } from "@/services/confirmTripDates";
 import { useTripStore } from "@/store/tripStore";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -37,6 +38,12 @@ export default function EditStepScreen() {
         key={step.id}
         initialValues={step}
         onSubmit={async (values) => {
+          const accepted = await confirmTripDates(trip, values.date);
+
+          if (!accepted) {
+            return false;
+          }
+
           await updateStep(
             {
               ...step,

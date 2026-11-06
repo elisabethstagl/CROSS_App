@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -17,7 +18,10 @@ type StepFormValues = Pick<Step, "name" | "note" | "date">;
 
 type StepFormProps = {
   initialValues?: StepFormValues;
-  onSubmit: (values: StepFormValues) => void | Promise<void>;
+
+  onSubmit: (
+    values: StepFormValues,
+  ) => boolean | void | Promise<boolean | void>;
 };
 
 export function StepForm({ initialValues, onSubmit }: StepFormProps) {
@@ -75,11 +79,16 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
     setError(null);
 
     try {
-      await onSubmit({
+      const accepted = await onSubmit({
         name: trimmedName,
         note: note.trim(),
         date: toStorageDate(date),
       });
+
+      if (accepted === false) {
+        submitted.current = false;
+        setSaving(false);
+      }
     } catch {
       setError("Could not save the step. Please try again.");
 
@@ -136,11 +145,20 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           </Text>
         </Pressable>
 
-        {error && (
-          <Text accessibilityRole="alert" style={styles.error}>
-            {error}
-          </Text>
-        )}
+        <View style={{ minHeight: 48, justifyContent: "center" }}>
+          {error && (
+            <Text
+              accessibilityRole="alert"
+              style={{
+                color: Colors.light.error,
+                fontSize: 14,
+                lineHeight: 20,
+              }}
+            >
+              {error}
+            </Text>
+          )}
+        </View>
 
         <Button
           title={saving ? "Saving..." : "Save step"}
