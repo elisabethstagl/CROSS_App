@@ -22,8 +22,6 @@ export async function getCurrentStepLocation(): Promise<StepLocation> {
     throw new Error("Location services are disabled. Please enable GPS.");
   }
 
-  // First try a recently cached location.
-  // This can work even without an internet connection.
   const cached = await Location.getLastKnownPositionAsync({
     maxAge: 5 * 60 * 1000,
     requiredAccuracy: 1000,
@@ -36,8 +34,6 @@ export async function getCurrentStepLocation(): Promise<StepLocation> {
     };
   }
 
-  // Otherwise request a fresh GPS position.
-  // Balanced accuracy is usually faster than High.
   const positionPromise = Location.getCurrentPositionAsync({
     accuracy: Location.Accuracy.Balanced,
   });

@@ -16,7 +16,6 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCountriesStore } from "@/store/useCountriesStore";
 import { loadFavourites } from "@/services/database/favouritesStorage";
 
-import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { Text, View } from "react-native";
 import FootprintsLogo from "@/components/FootprintsLogo";
 

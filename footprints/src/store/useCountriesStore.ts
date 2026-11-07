@@ -17,7 +17,6 @@ import {
 
 const RECOMMENDATION_COUNT = 10;
 
-// Shuffle a copy of the array.
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
 
