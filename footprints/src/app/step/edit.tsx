@@ -1,44 +1,71 @@
+
 import { StepForm } from "@/components/StepForm";
-import { Colors } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { confirmTripDates } from "@/services/confirmTripDates";
 import { useTripStore } from "@/store/tripStore";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  Stack,
+  useLocalSearchParams,
+} from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { Text, View } from "react-native";
 
 export default function EditStepScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const colors = useTheme();
+
+  const { id } = useLocalSearchParams<{
+    id?: string;
+  }>();
 
   const step = useTripStore((state) =>
-    state.steps.find((item) => item.id === id),
+    state.steps.find((item) => item.id === id)
   );
 
   const trip = useTripStore((state) =>
-    state.trips.find((item) => item.id === step?.tripId),
+    state.trips.find((item) => item.id === step?.tripId)
   );
 
-  const updateStep = useTripStore((state) => state.updateStep);
+  const updateStep = useTripStore(
+    (state) => state.updateStep
+  );
 
   const db = useSQLiteContext();
 
   if (!step || !trip) {
     return (
-      <View style={{ padding: 24 }}>
-        <Stack.Screen options={{ title: "Edit step" }} />
-        <Text style={{ color: Colors.light.text }}>Step not found.</Text>
+      <View
+        style={{
+          flex: 1,
+          padding: 24,
+          backgroundColor: colors.background,
+        }}
+      >
+        <Stack.Screen
+          options={{ title: "Edit step" }}
+        />
+
+        <Text style={{ color: colors.text }}>
+          Step not found.
+        </Text>
       </View>
     );
   }
 
   return (
     <>
-      <Stack.Screen options={{ title: "Edit step" }} />
+      <Stack.Screen
+        options={{ title: "Edit step" }}
+      />
 
       <StepForm
         key={step.id}
         initialValues={step}
         onSubmit={async (values) => {
-          const accepted = await confirmTripDates(trip, values.date);
+          const accepted = await confirmTripDates(
+            trip,
+            values.date
+          );
 
           if (!accepted) {
             return false;
@@ -49,7 +76,7 @@ export default function EditStepScreen() {
               ...step,
               ...values,
             },
-            db,
+            db
           );
 
           router.dismissTo({

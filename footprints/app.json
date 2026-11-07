@@ -41,6 +41,13 @@
           "locationAlwaysAndWhenInUsePermission": "Allow Footprints to use your location.",
           "locationWhenInUsePermission": "Allow Footprints to use your location."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow Footprints to take photos for your travel diary.",
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {
