@@ -13,6 +13,9 @@ import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
+import { useCountriesStore } from "@/store/useCountriesStore";
+import { loadFavourites } from "@/services/favouritesStorage";
+
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
@@ -25,6 +28,13 @@ async function initializeApp(db: SQLiteDatabase): Promise<void> {
   const { trips, steps } = await loadTripData(db);
 
   useTripStore.getState().setStoredData(trips, steps);
+
+  const favourites = await loadFavourites(db);
+
+  useCountriesStore.setState({
+    favourites,
+    favouritesLoaded: true,
+  });
 }
 
 export default function RootLayout() {

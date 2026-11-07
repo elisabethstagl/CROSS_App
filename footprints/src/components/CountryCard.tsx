@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
-import { MaterialIcons } from "@react-native-vector-icons/material-icons";
+import { Alert, View, Text, Pressable, StyleSheet } from "react-native";
 
-import type { Country } from "../services/countriesService";
-import { useTheme } from "../hooks/use-theme";
-import { BorderRadius, Spacing } from "../constants/theme";
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
+import { useSQLiteContext } from "expo-sqlite";
+
+import type { Country } from "@/services/countriesService";
+import { useCountriesStore } from "@/store/useCountriesStore";
+import { useTheme } from "@/hooks/use-theme";
+import { BorderRadius, Spacing } from "@/constants/theme";
 
 interface CountryCardProps {
   country: Country;
@@ -12,11 +15,33 @@ interface CountryCardProps {
 
 export default function CountryCard({ country }: CountryCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const colors = useTheme();
+  const db = useSQLiteContext();
+
+  const isFavourite = useCountriesStore((state) =>
+    state.favourites.some((item) => item.code === country.code),
+  );
+
+  const toggleFavourite = useCountriesStore((state) => state.toggleFavourite);
+
+  async function handleToggleFavourite() {
+    if (saving) return;
+
+    setSaving(true);
+
+    try {
+      await toggleFavourite(db, country);
+    } catch {
+      Alert.alert("Could not save favourite", "Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
-    <Pressable
-      onPress={() => setExpanded(!expanded)}
+    <View
       style={[
         styles.card,
         {
@@ -26,23 +51,51 @@ export default function CountryCard({ country }: CountryCardProps) {
       ]}
     >
       <View style={styles.header}>
-        <Text style={styles.flag}>{country.flag}</Text>
+        <Pressable
+          onPress={() => setExpanded(!expanded)}
+          accessibilityRole="button"
+          accessibilityLabel={`Show details for ${country.name}`}
+          accessibilityState={{ expanded }}
+          style={styles.countryHeader}
+        >
+          <Text style={styles.flag}>{country.flag}</Text>
 
-        <View style={styles.titleContainer}>
-          <Text style={[styles.name, { color: colors.text }]}>
-            {country.name}
-          </Text>
+          <View style={styles.titleContainer}>
+            <Text style={[styles.name, { color: colors.text }]}>
+              {country.name}
+            </Text>
 
-          <Text style={[styles.region, { color: colors.textSecondary }]}>
-            {country.region}
-          </Text>
-        </View>
+            <Text style={[styles.region, { color: colors.textSecondary }]}>
+              {country.region}
+            </Text>
+          </View>
 
-        <MaterialIcons
-          name={expanded ? "expand-less" : "expand-more"}
-          size={26}
-          color={colors.primary}
-        />
+          <MaterialIcons
+            name={expanded ? "expand-less" : "expand-more"}
+            size={26}
+            color={colors.primary}
+          />
+        </Pressable>
+
+        <Pressable
+          onPress={handleToggleFavourite}
+          disabled={saving}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isFavourite
+              ? `Remove ${country.name} from favourites`
+              : `Add ${country.name} to favourites`
+          }
+          accessibilityState={{ disabled: saving }}
+          hitSlop={10}
+          style={styles.heartButton}
+        >
+          <MaterialIcons
+            name={isFavourite ? "favorite" : "favorite-border"}
+            size={26}
+            color={isFavourite ? colors.error : colors.textSecondary}
+          />
+        </Pressable>
       </View>
 
       {expanded && (
@@ -95,7 +148,7 @@ export default function CountryCard({ country }: CountryCardProps) {
           ) : null}
         </View>
       )}
-    </Pressable>
+    </View>
   );
 }
 
@@ -126,6 +179,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  countryHeader: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
   flag: {
     fontSize: 32,
     marginRight: Spacing.three,
@@ -143,6 +202,11 @@ const styles = StyleSheet.create({
   region: {
     fontSize: 13,
     marginTop: Spacing.one,
+  },
+
+  heartButton: {
+    padding: Spacing.two,
+    marginLeft: Spacing.one,
   },
 
   details: {
