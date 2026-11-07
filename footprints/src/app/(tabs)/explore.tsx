@@ -1,4 +1,7 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
+import { useFocusEffect } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+
 import {
   ActivityIndicator,
   FlatList,
@@ -7,17 +10,22 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 
 import CountryCard from "@/components/CountryCard";
-import { BottomTabInset, FontSize, Spacing } from "@/constants/theme";
+import { BottomTabInset, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useCountriesStore } from "@/store/useCountriesStore";
 
 export default function ExploreScreen() {
   const colors = useTheme();
+  const db = useSQLiteContext();
 
   const countries = useCountriesStore((state) => state.countries);
+
+  const recommendations = useCountriesStore((state) => state.recommendations);
 
   const loading = useCountriesStore((state) => state.loading);
 
@@ -25,9 +33,27 @@ export default function ExploreScreen() {
 
   const fetchCountries = useCountriesStore((state) => state.fetchCountries);
 
+  const discoverMore = useCountriesStore((state) => state.discoverMore);
+
   useEffect(() => {
-    fetchCountries();
-  }, [fetchCountries]);
+    void fetchCountries(db);
+  }, [db, fetchCountries]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Only generate a new batch when there
+      // are already recommendations to replace.
+      // Initial recommendations are generated
+      // by fetchCountries().
+      if (useCountriesStore.getState().recommendations.length > 0) {
+        discoverMore();
+      }
+    }, [discoverMore]),
+  );
+
+  const showLoading = loading && countries.length === 0;
+
+  const showError = !!error && countries.length === 0;
 
   return (
     <SafeAreaView
@@ -38,41 +64,84 @@ export default function ExploreScreen() {
         <Text style={[styles.title, { color: colors.text }]}>Discover</Text>
 
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Explore destinations for your next adventure.
+          Find inspiration for your next adventure.
         </Text>
 
-        {loading && countries.length === 0 ? (
+        {showLoading ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color={colors.primary} />
+
             <Text style={[styles.message, { color: colors.textSecondary }]}>
-              Loading countries...
+              Finding destinations...
             </Text>
           </View>
-        ) : error && countries.length === 0 ? (
+        ) : showError ? (
           <View style={styles.center}>
             <Text style={[styles.message, { color: colors.error }]}>
               {error}
             </Text>
 
             <Pressable
-              onPress={fetchCountries}
-              style={[styles.retryButton, { backgroundColor: colors.primary }]}
+              onPress={() => void fetchCountries(db)}
+              style={[
+                styles.button,
+                {
+                  backgroundColor: colors.primary,
+                },
+              ]}
             >
-              <Text style={{ color: colors.onPrimary }}>Try again</Text>
+              <Text style={styles.buttonText}>Try again</Text>
             </Pressable>
           </View>
         ) : (
           <FlatList
-            data={countries}
+            data={recommendations}
             keyExtractor={(item) => item.code}
             renderItem={({ item }) => <CountryCard country={item} />}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.list}
             ListHeaderComponent={
-              error ? (
-                <Text style={[styles.message, { color: colors.error }]}>
-                  {error}
-                </Text>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionText}>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                    Recommended destinations
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.sectionSubtitle,
+                      {
+                        color: colors.textSecondary,
+                      },
+                    ]}
+                  >
+                    {recommendations.length} places to explore
+                  </Text>
+                </View>
+
+                <MaterialIcons
+                  name="explore"
+                  size={28}
+                  color={colors.primary}
+                />
+              </View>
+            }
+            ListFooterComponent={
+              recommendations.length > 0 ? (
+                <Pressable
+                  onPress={discoverMore}
+                  accessibilityRole="button"
+                  style={[
+                    styles.button,
+                    {
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                >
+                  <MaterialIcons name="refresh" size={22} color="#FFFFFF" />
+
+                  <Text style={styles.buttonText}>Discover more</Text>
+                </Pressable>
               ) : undefined
             }
           />
@@ -94,7 +163,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: FontSize.screenTitle,
+    fontSize: 28,
     fontWeight: "700",
     marginBottom: Spacing.two,
   },
@@ -104,8 +173,29 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.four,
   },
 
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: Spacing.four,
+  },
+
+  sectionText: {
+    flex: 1,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  sectionSubtitle: {
+    fontSize: 13,
+    marginTop: Spacing.one,
+  },
+
   list: {
-    paddingBottom: BottomTabInset + Spacing.three,
+    paddingBottom: BottomTabInset + Spacing.four,
   },
 
   center: {
@@ -120,9 +210,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  retryButton: {
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.two,
+    paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
     borderRadius: 12,
+    marginTop: Spacing.three,
+  },
+
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

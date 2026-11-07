@@ -1,7 +1,7 @@
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { Colors } from "@/constants/theme";
-import { initializeDatabase } from "@/services/database";
-import { loadTripData } from "@/services/tripStorage";
+import { initializeDatabase } from "@/services/database/database";
+import { loadTripData } from "@/services/database/tripStorage";
 import { useTripStore } from "@/store/tripStore";
 
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
@@ -12,6 +12,9 @@ import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
 
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+
+import { useCountriesStore } from "@/store/useCountriesStore";
+import { loadFavourites } from "@/services/database/favouritesStorage";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +28,13 @@ async function initializeApp(db: SQLiteDatabase): Promise<void> {
   const { trips, steps } = await loadTripData(db);
 
   useTripStore.getState().setStoredData(trips, steps);
+
+  const favourites = await loadFavourites(db);
+
+  useCountriesStore.setState({
+    favourites,
+    favouritesLoaded: true,
+  });
 }
 
 export default function RootLayout() {

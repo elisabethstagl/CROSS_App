@@ -4,7 +4,7 @@ import {
   insertTrip,
   saveStepWithTripInDatabase,
   updateTripInDatabase,
-} from "@/services/tripStorage";
+} from "@/services/database/tripStorage";
 import { Step } from "@/types/Step";
 import { Trip } from "@/types/Trip";
 import { sortByDate } from "@/utils/sortByDate";
