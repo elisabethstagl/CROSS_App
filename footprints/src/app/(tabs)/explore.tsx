@@ -1,18 +1,18 @@
 import { useEffect } from "react";
 import {
-  View,
-  Text,
   ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import CountryCard from "../components/CountryCard";
-import { useCountriesStore } from "../store/useCountriesStore";
-import { useTheme } from "../hooks/use-theme";
-import { Spacing, BottomTabInset, FontSize } from "../constants/theme";
+import CountryCard from "@/components/CountryCard";
+import { BottomTabInset, FontSize, Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
+import { useCountriesStore } from "@/store/useCountriesStore";
 
 export default function ExploreScreen() {
   const colors = useTheme();

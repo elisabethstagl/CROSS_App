@@ -1,89 +1,138 @@
-import { create } from "zustand";
-import { Trip } from "@/types/Trip";
+import {
+  deleteStepFromDatabase,
+  deleteTripFromDatabase,
+  insertTrip,
+  saveStepWithTripInDatabase,
+  updateTripInDatabase,
+} from "@/services/tripStorage";
 import { Step } from "@/types/Step";
+import { Trip } from "@/types/Trip";
+import { sortByDate } from "@/utils/sortByDate";
+import { extendTripDates } from "@/utils/tripDates";
+import type { SQLiteDatabase } from "expo-sqlite";
+import { create } from "zustand";
 
 type TripStore = {
   trips: Trip[];
   steps: Step[];
 
-  addTrip: (trip: Trip) => void;
-  updateTrip: (trip: Trip) => void;
-  removeTrip: (id: string) => void;
+  addTrip: (trip: Trip, db: SQLiteDatabase) => Promise<void>;
+  updateTrip: (trip: Trip, db: SQLiteDatabase) => Promise<void>;
+  removeTrip: (id: string, db: SQLiteDatabase) => Promise<void>;
 
-  addStep: (step: Step) => void;
-  updateStep: (step: Step) => void;
-  removeStep: (id: string) => void;
+  addStep: (step: Step, db: SQLiteDatabase) => Promise<void>;
+
+  updateStep: (step: Step, db: SQLiteDatabase) => Promise<void>;
+
+  removeStep: (id: string, db: SQLiteDatabase) => Promise<void>;
 
   getTripById: (id: string) => Trip | undefined;
   getStepsByTripId: (tripId: string) => Step[];
+
+  setStoredData: (trips: Trip[], steps: Step[]) => void;
 };
 
 export const useTripStore = create<TripStore>((set, get) => ({
-  trips: [
-  {
-    id: "1",
-    name: "Italy 2026",
-    startDate: "2026-07-10",
-    endDate: "2026-07-20",
-  },
-  {
-    id: "2",
-    name: "South Korea 2025",
-    startDate: "2025-09-01",
-    endDate: "2025-09-15",
-  },
-],
+  trips: [],
+  steps: [],
 
-steps: [
-  {
-    id: "1",
-    tripId: "1",
-    note: "Visited the Colosseum",
-    date: "2026-07-12",
-    latitude: 41.8902,
-    longitude: 12.4922,
-  },
-],
+  setStoredData: (trips, steps) =>
+    set({
+      trips,
+      steps,
+    }),
 
-  addTrip: (trip) =>
+  addTrip: async (trip, db) => {
+    await insertTrip(db, trip);
+
     set((state) => ({
-      trips: [...state.trips, trip],
-    })),
+      trips: sortByDate([...state.trips, trip], (item) => item.startDate),
+    }));
+  },
 
-  updateTrip: (updatedTrip) =>
+  updateTrip: async (updatedTrip, db) => {
+    await updateTripInDatabase(db, updatedTrip);
+
     set((state) => ({
-      trips: state.trips.map((trip) =>
-        trip.id === updatedTrip.id ? updatedTrip : trip
+      trips: sortByDate(
+        state.trips.map((trip) =>
+          trip.id === updatedTrip.id ? updatedTrip : trip,
+        ),
+        (item) => item.startDate,
       ),
-    })),
+    }));
+  },
 
-  removeTrip: (id) =>
+  removeTrip: async (id, db) => {
+    await deleteTripFromDatabase(db, id);
+
     set((state) => ({
       trips: state.trips.filter((trip) => trip.id !== id),
 
-      // Also remove all steps belonging to this trip
       steps: state.steps.filter((step) => step.tripId !== id),
-    })),
+    }));
+  },
 
-  addStep: (step) =>
-    set((state) => ({
-      steps: [...state.steps, step],
-    })),
+  addStep: async (step, db) => {
+    const trip = get().getTripById(step.tripId);
 
-  updateStep: (updatedStep) =>
+    if (!trip) {
+      throw new Error("Trip not found.");
+    }
+
+    const updatedTrip = extendTripDates(trip, step.date);
+
+    await saveStepWithTripInDatabase(db, step, trip, "create");
+
     set((state) => ({
-      steps: state.steps.map((step) =>
-        step.id === updatedStep.id ? updatedStep : step
+      trips: sortByDate(
+        state.trips.map((item) =>
+          item.id === updatedTrip.id ? updatedTrip : item,
+        ),
+        (item) => item.startDate,
       ),
-    })),
 
-  removeStep: (id) =>
+      steps: sortByDate([...state.steps, step], (item) => item.date),
+    }));
+  },
+
+  updateStep: async (updatedStep, db) => {
+    const trip = get().getTripById(updatedStep.tripId);
+
+    if (!trip) {
+      throw new Error("Trip not found.");
+    }
+
+    const updatedTrip = extendTripDates(trip, updatedStep.date);
+
+    await saveStepWithTripInDatabase(db, updatedStep, trip, "update");
+
+    set((state) => ({
+      trips: sortByDate(
+        state.trips.map((item) =>
+          item.id === updatedTrip.id ? updatedTrip : item,
+        ),
+        (item) => item.startDate,
+      ),
+
+      steps: sortByDate(
+        state.steps.map((item) =>
+          item.id === updatedStep.id ? updatedStep : item,
+        ),
+        (item) => item.date,
+      ),
+    }));
+  },
+
+  removeStep: async (id, db) => {
+    await deleteStepFromDatabase(db, id);
+
     set((state) => ({
       steps: state.steps.filter((step) => step.id !== id),
-    })),
+    }));
+  },
 
-  getTripById: (id) =>
-    get().trips.find((trip) => trip.id === id),
+  getTripById: (id) => get().trips.find((trip) => trip.id === id),
 
   getStepsByTripId: (tripId) =>
     get().steps.filter((step) => step.tripId === tripId),

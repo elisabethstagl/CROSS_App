@@ -1,4 +1,9 @@
+import { TripCard } from "@/components/TripCard";
+import { BorderRadius, IconSize, Spacing } from "@/constants/theme";
+import { useTripStore } from "@/store/tripStore";
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
+import { router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import {
   Alert,
   FlatList,
@@ -9,29 +14,22 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { TripCard } from "@/components/TripCard";
-import {
-  BorderRadius,
-  IconSize,
-  Spacing,
-  BottomTabInset,
-  FontSize,
-} from "@/constants/theme";
+import { BottomTabInset, FontSize } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import { useTripStore } from "@/store/tripStore";
 
 export default function HomeScreen() {
   const colors = useTheme();
 
   const trips = useTripStore((state) => state.trips);
   const removeTrip = useTripStore((state) => state.removeTrip);
+  const db = useSQLiteContext();
 
   const handleAddTrip = () => {
-    console.log("Add trip pressed");
+    router.push("/trip/create");
   };
 
   const handleDeleteTrip = (id: string, name: string) => {
-    Alert.alert("Delete Trip", `Are you sure you want to delete "${name}"?`, [
+    Alert.alert("Delete trip", `Are you sure you want to delete "${name}"?`, [
       {
         text: "Cancel",
         style: "cancel",
@@ -39,16 +37,22 @@ export default function HomeScreen() {
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => removeTrip(id),
+        onPress: async () => {
+          try {
+            await removeTrip(id, db);
+          } catch {
+            Alert.alert(
+              "Delete failed",
+              "Could not delete the trip. Please try again.",
+            );
+          }
+        },
       },
     ]);
   };
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-      edges={["top"]}
-    >
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>My Trips</Text>
@@ -78,10 +82,16 @@ export default function HomeScreen() {
             <TripCard
               trip={item}
               onPress={() => {
-                console.log("Open trip:", item.id);
+                router.push({
+                  pathname: "/trip/[id]",
+                  params: { id: item.id },
+                });
               }}
               onEdit={() => {
-                console.log("Edit trip:", item.id);
+                router.push({
+                  pathname: "/trip/edit",
+                  params: { id: item.id },
+                });
               }}
               onDelete={() => {
                 handleDeleteTrip(item.id, item.name);

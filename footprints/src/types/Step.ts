@@ -1,6 +1,7 @@
 export type Step = {
   id: string;
   tripId: string;
+  name: string;
 
   note: string;
   date: string;
