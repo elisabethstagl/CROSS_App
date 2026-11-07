@@ -40,44 +40,86 @@ interface ApiCountry {
   };
 }
 
+interface CountriesResponse {
+  data?: {
+    objects?: ApiCountry[];
+    meta?: {
+      more?: boolean;
+      total?: number;
+    };
+  };
+  errors?: {
+    message?: string;
+  }[];
+}
+
+const API_URL = "https://api.restcountries.com/countries/v5";
+
+const PAGE_SIZE = 100;
+
 export async function getCountries(): Promise<Country[]> {
   const apiKey = process.env.EXPO_PUBLIC_REST_COUNTRIES_API_KEY;
 
   if (!apiKey) {
-    throw new Error("API-Key fehlt");
+    throw new Error("API key is missing.");
   }
 
-  const response = await fetch(
-    "https://api.restcountries.com/countries/v5?limit=20",
-    {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
+  const countries: Country[] = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await fetch(
+      `${API_URL}?limit=${PAGE_SIZE}&offset=${offset}`,
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
       },
-    },
-  );
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      result.errors?.[0]?.message ?? "Länder konnten nicht geladen werden",
     );
-  }
 
-  const countries: Country[] = (result.data.objects as ApiCountry[]).map(
-    (country) => ({
+    const result = (await response.json()) as CountriesResponse;
+
+    if (!response.ok) {
+      throw new Error(
+        result.errors?.[0]?.message ?? "Countries could not be loaded.",
+      );
+    }
+
+    const objects = result.data?.objects;
+
+    if (!Array.isArray(objects)) {
+      throw new Error("Invalid countries API response.");
+    }
+
+    const page: Country[] = objects.map((country) => ({
       code: country.codes?.alpha_2 || country.uuid,
-      name: country.names?.common ?? "Unbekannt",
+      name: country.names?.common ?? "Unknown",
       flag: country.flag?.emoji || "🌍",
-      capital: country.capitals?.[0]?.name ?? "Keine Angabe",
-      region: country.region || "Keine Angabe",
-      subregion: country.subregion || "Keine Angabe",
+      capital: country.capitals?.[0]?.name ?? "Not available",
+      region: country.region || "Not available",
+      subregion: country.subregion || "Not available",
       population: country.population ?? 0,
       languages: country.languages?.map((language) => language.name) ?? [],
-      currency: country.currencies?.[0]?.name ?? "Keine Angabe",
+      currency: country.currencies?.[0]?.name ?? "Not available",
       description: country.descriptions?.short ?? "",
-    }),
+    }));
+
+    countries.push(...page);
+
+    if (
+      objects.length === 0 ||
+      result.data?.meta?.more === false ||
+      (result.data?.meta?.more === undefined && objects.length < PAGE_SIZE)
+    ) {
+      break;
+    }
+
+    offset += objects.length;
+  }
+
+  const uniqueCountries = Array.from(
+    new Map(countries.map((country) => [country.code, country])).values(),
   );
 
-  return countries.sort((a, b) => a.name.localeCompare(b.name));
+  return uniqueCountries.sort((a, b) => a.name.localeCompare(b.name));
 }
