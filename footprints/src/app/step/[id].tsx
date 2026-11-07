@@ -1,35 +1,102 @@
-import { Colors } from "@/constants/theme";
+
+import { useTheme } from "@/hooks/use-theme";
 import { useTripStore } from "@/store/tripStore";
 import { formatDisplayDate } from "@/utils/date";
+
 import { Image } from "expo-image";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Stack,
+  useLocalSearchParams,
+} from "expo-router";
+
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StepDetailsScreen() {
+  const colors = useTheme();
+
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const step = useTripStore((state) =>
-    state.steps.find((item) => item.id === id),
+    state.steps.find((item) => item.id === id)
   );
 
   if (!step) {
     return (
-      <View style={styles.content}>
-        <Stack.Screen options={{ title: "Step details" }} />
-        <Text style={styles.text}>Step not found.</Text>
+      <View
+        style={[
+          styles.screen,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <Stack.Screen
+          options={{ title: "Step details" }}
+        />
+
+        <View style={styles.content}>
+          <Text
+            style={[
+              styles.text,
+              { color: colors.text },
+            ]}
+          >
+            Step not found.
+          </Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
-      <Stack.Screen options={{ title: step.name || "Step details" }} />
+    <SafeAreaView
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background },
+      ]}
+      edges={["left", "right", "bottom"]}
+    >
+      <Stack.Screen
+        options={{
+          title: step.name || "Step details",
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+          headerTitleStyle: {
+            color: colors.text,
+          },
+        }}
+      />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{step.name || "Unnamed step"}</Text>
+      <ScrollView
+        style={{
+          backgroundColor: colors.background,
+        }}
+        contentContainerStyle={styles.content}
+      >
+        <Text
+          style={[
+            styles.title,
+            { color: colors.text },
+          ]}
+        >
+          {step.name || "Unnamed step"}
+        </Text>
 
-        <Text style={styles.date}>{formatDisplayDate(step.date)}</Text>
+        <Text
+          style={[
+            styles.date,
+            { color: colors.textSecondary },
+          ]}
+        >
+          {formatDisplayDate(step.date)}
+        </Text>
 
         {step.photoUri && (
           <Image
@@ -42,19 +109,48 @@ export default function StepDetailsScreen() {
 
         {step.note.trim().length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Note</Text>
-            <Text style={styles.text}>{step.note}</Text>
-          </>
-        )}
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: colors.text },
+              ]}
+            >
+              Note
+            </Text>
 
-        {step.latitude != null && step.longitude != null && (
-          <>
-            <Text style={styles.sectionTitle}>Location</Text>
-            <Text style={styles.text}>
-              {step.latitude}, {step.longitude}
+            <Text
+              style={[
+                styles.text,
+                { color: colors.text },
+              ]}
+            >
+              {step.note}
             </Text>
           </>
         )}
+
+        {step.latitude != null &&
+          step.longitude != null && (
+            <>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: colors.text },
+                ]}
+              >
+                Location
+              </Text>
+
+              <Text
+                style={[
+                  styles.text,
+                  { color: colors.text },
+                ]}
+              >
+                {step.latitude}, {step.longitude}
+              </Text>
+            </>
+          )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -63,32 +159,33 @@ export default function StepDetailsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.light.background,
   },
+
   content: {
     padding: 24,
     gap: 12,
   },
+
   title: {
     fontSize: 26,
     fontWeight: "700",
-    color: Colors.light.text,
   },
+
   date: {
     fontSize: 14,
-    color: Colors.light.textSecondary,
   },
+
   sectionTitle: {
     marginTop: 12,
     fontSize: 20,
     fontWeight: "600",
-    color: Colors.light.text,
   },
+
   text: {
     fontSize: 16,
     lineHeight: 24,
-    color: Colors.light.text,
   },
+
   photo: {
     width: "100%",
     aspectRatio: 4 / 3,

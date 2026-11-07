@@ -1,10 +1,18 @@
+
 import { StepCard } from "@/components/StepCard";
-import { BorderRadius, Colors, IconSize } from "@/constants/theme";
+import { BorderRadius, IconSize } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { useTripStore } from "@/store/tripStore";
 import { formatDisplayDate } from "@/utils/date";
+
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  Stack,
+  useLocalSearchParams,
+} from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
+
 import {
   Alert,
   Pressable,
@@ -13,66 +21,131 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TripDetailsScreen() {
+  const colors = useTheme();
+
   const { id } = useLocalSearchParams<{ id: string }>();
-
-  const trip = useTripStore((state) =>
-    state.trips.find((item) => item.id === id),
-  );
-  const allSteps = useTripStore((state) => state.steps);
-
-  const steps = allSteps.filter((step) => step.tripId === id);
-  const removeStep = useTripStore((state) => state.removeStep);
-
-  function handleDeleteStep(stepId: string) {
-    Alert.alert("Delete step", "Are you sure you want to delete this step?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await removeStep(stepId, db);
-          } catch {
-            Alert.alert(
-              "Delete failed",
-              "Could not delete the step. Please try again.",
-            );
-          }
-        },
-      },
-    ]);
-  }
 
   const db = useSQLiteContext();
 
+  const trip = useTripStore((state) =>
+    state.trips.find((item) => item.id === id)
+  );
+
+  const allSteps = useTripStore((state) => state.steps);
+
+  const steps = allSteps.filter(
+    (step) => step.tripId === id
+  );
+
+  const removeStep = useTripStore(
+    (state) => state.removeStep
+  );
+
+  function handleDeleteStep(stepId: string) {
+    Alert.alert(
+      "Delete step",
+      "Are you sure you want to delete this step?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await removeStep(stepId, db);
+            } catch {
+              Alert.alert(
+                "Delete failed",
+                "Could not delete the step. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
+  }
+
   if (!trip) {
     return (
-      <View style={styles.content}>
-        <Stack.Screen options={{ title: "Trip details" }} />
-        <Text style={styles.text}>Trip not found.</Text>
+      <View
+        style={[
+          styles.screen,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <Stack.Screen
+          options={{ title: "Trip details" }}
+        />
+
+        <View style={styles.content}>
+          <Text
+            style={[
+              styles.text,
+              { color: colors.text },
+            ]}
+          >
+            Trip not found.
+          </Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
-      <Stack.Screen options={{ title: trip.name }} />
+    <SafeAreaView
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background },
+      ]}
+      edges={["left", "right", "bottom"]}
+    >
+      <Stack.Screen
+        options={{
+          title: trip.name,
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+          headerTitleStyle: {
+            color: colors.text,
+          },
+        }}
+      />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        style={{
+          backgroundColor: colors.background,
+        }}
+        contentContainerStyle={styles.content}
+      >
         <View style={styles.header}>
-          <Text style={[styles.title, { flex: 1 }]}>{trip.name}</Text>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.text,
+                flex: 1,
+              },
+            ]}
+          >
+            {trip.name}
+          </Text>
 
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create step"
             style={({ pressed }) => [
               styles.addButton,
+              {
+                backgroundColor: colors.primary,
+              },
               pressed && styles.addButtonPressed,
             ]}
             onPress={() => {
@@ -85,12 +158,17 @@ export default function TripDetailsScreen() {
             <MaterialIcons
               name="add"
               size={IconSize.large}
-              color={Colors.light.onPrimary}
+              color={colors.onPrimary}
             />
           </Pressable>
         </View>
 
-        <Text style={styles.text}>
+        <Text
+          style={[
+            styles.text,
+            { color: colors.textSecondary },
+          ]}
+        >
           {formatDisplayDate(trip.startDate)}
           {" – "}
           {formatDisplayDate(trip.endDate)}
@@ -112,7 +190,9 @@ export default function TripDetailsScreen() {
                 params: { id: step.id },
               });
             }}
-            onDelete={() => handleDeleteStep(step.id)}
+            onDelete={() =>
+              handleDeleteStep(step.id)
+            }
           />
         ))}
       </ScrollView>
@@ -121,6 +201,15 @@ export default function TripDetailsScreen() {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+
+  content: {
+    padding: 24,
+    gap: 12,
+  },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -128,11 +217,19 @@ const styles = StyleSheet.create({
     gap: 16,
   },
 
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+  },
+
+  text: {
+    fontSize: 16,
+  },
+
   addButton: {
     width: 56,
     height: 56,
     borderRadius: BorderRadius.large,
-    backgroundColor: Colors.light.primary,
     alignItems: "center",
     justifyContent: "center",
 
@@ -149,22 +246,5 @@ const styles = StyleSheet.create({
 
   addButtonPressed: {
     opacity: 0.8,
-  },
-  screen: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  content: {
-    padding: 24,
-    gap: 12,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  text: {
-    fontSize: 16,
-    color: Colors.light.text,
   },
 });

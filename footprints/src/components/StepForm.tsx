@@ -1,10 +1,11 @@
-import { Colors } from "@/constants/theme";
+
+import { useTheme } from "@/hooks/use-theme";
 import type { Step } from "@/types/Step";
 import { formatDisplayDate, toStorageDate } from "@/utils/date";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useRef, useState } from "react";
 import {
-  Button,
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,39 +19,43 @@ type StepFormValues = Pick<Step, "name" | "note" | "date">;
 
 type StepFormProps = {
   initialValues?: StepFormValues;
-
   onSubmit: (
-    values: StepFormValues,
+    values: StepFormValues
   ) => boolean | void | Promise<boolean | void>;
 };
 
 export function StepForm({ initialValues, onSubmit }: StepFormProps) {
+  const colors = useTheme();
+
   const [name, setName] = useState(initialValues?.name ?? "");
   const [note, setNote] = useState(initialValues?.note ?? "");
   const [date, setDate] = useState<Date | null>(() =>
-    initialValues?.date ? new Date(initialValues.date + "T12:00:00") : null,
+    initialValues?.date
+      ? new Date(initialValues.date + "T12:00:00")
+      : null
   );
   const [error, setError] = useState<string | null>(null);
-  const submitted = useRef(false);
   const [saving, setSaving] = useState(false);
+  const submitted = useRef(false);
 
   function openDatePicker() {
+    if (saving) return;
+
     DateTimePickerAndroid.open({
       mode: "date",
       display: "calendar",
       value: date ?? new Date(),
-
       positiveButton: {
         label: "OK",
-        textColor: Colors.light.primary,
+        textColor: colors.primary,
       },
-
       negativeButton: {
         label: "Cancel",
-        textColor: Colors.light.textSecondary,
+        textColor: colors.textSecondary,
       },
+      onChange: (event, selectedDate) => {
+        if (event.type !== "set" || !selectedDate) return;
 
-      onValueChange: (_event, selectedDate) => {
         setDate(selectedDate);
         setError(null);
       },
@@ -58,9 +63,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
   }
 
   async function handleSaveStep() {
-    if (submitted.current) {
-      return;
-    }
+    if (submitted.current) return;
 
     const trimmedName = name.trim();
 
@@ -91,81 +94,142 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
       }
     } catch {
       setError("Could not save the step. Please try again.");
-
       submitted.current = false;
       setSaving(false);
     }
   }
 
+  const fieldStyle = {
+    backgroundColor: colors.surface,
+    borderColor: colors.outline,
+  };
+
   return (
-    <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
+    <SafeAreaView
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background },
+      ]}
+      edges={["left", "right", "bottom"]}
+    >
       <ScrollView
+        style={{ backgroundColor: colors.background }}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
       >
-        <Text style={styles.label}>Step name</Text>
+        <Text style={[styles.label, { color: colors.text }]}>
+          Step name
+        </Text>
 
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            fieldStyle,
+            { color: colors.text },
+          ]}
           value={name}
           onChangeText={(text) => {
             setName(text);
             setError(null);
           }}
+          placeholder="Visit the Colosseum"
+          placeholderTextColor={colors.textSecondary}
+          selectionColor={colors.primary}
           maxLength={80}
           editable={!saving}
         />
 
-        <Text style={styles.label}>Note</Text>
+        <Text style={[styles.label, { color: colors.text }]}>
+          Note
+        </Text>
 
         <TextInput
-          style={[styles.input, styles.noteInput]}
+          style={[
+            styles.input,
+            styles.noteInput,
+            fieldStyle,
+            { color: colors.text },
+          ]}
           value={note}
           onChangeText={(text) => {
             setNote(text);
             setError(null);
           }}
+          placeholder="Write something about this step..."
+          placeholderTextColor={colors.textSecondary}
+          selectionColor={colors.primary}
           multiline
           maxLength={2000}
           editable={!saving}
         />
 
-        <Text style={styles.label}>Date</Text>
+        <Text style={[styles.label, { color: colors.text }]}>
+          Date
+        </Text>
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Select step date"
-          onPress={openDatePicker}
           disabled={saving}
-          style={({ pressed }) => [styles.input, pressed && styles.pressed]}
+          onPress={openDatePicker}
+          style={({ pressed }) => [
+            styles.dateField,
+            fieldStyle,
+            pressed && styles.pressed,
+          ]}
         >
-          <Text style={[styles.text, !date && styles.placeholder]}>
-            {date ? formatDisplayDate(toStorageDate(date)) : "TT.MM.JJJJ"}
+          <Text
+            style={[
+              styles.dateText,
+              {
+                color: date
+                  ? colors.text
+                  : colors.textSecondary,
+              },
+            ]}
+          >
+            {date
+              ? formatDisplayDate(toStorageDate(date))
+              : "Select date"}
           </Text>
         </Pressable>
 
-        <View style={{ minHeight: 48, justifyContent: "center" }}>
+        <View style={styles.errorContainer}>
           {error && (
             <Text
               accessibilityRole="alert"
-              style={{
-                color: Colors.light.error,
-                fontSize: 14,
-                lineHeight: 20,
-              }}
+              style={[styles.error, { color: colors.error }]}
             >
               {error}
             </Text>
           )}
         </View>
 
-        <Button
-          title={saving ? "Saving..." : "Save step"}
-          color={Colors.light.primary}
+        <Pressable
+          accessibilityRole="button"
           disabled={saving}
           onPress={handleSaveStep}
-        />
+          style={({ pressed }) => [
+            styles.saveButton,
+            { backgroundColor: colors.primary },
+            pressed && styles.pressed,
+            saving && styles.disabled,
+          ]}
+        >
+          {saving ? (
+            <ActivityIndicator color={colors.onPrimary} />
+          ) : (
+            <Text
+              style={[
+                styles.saveButtonText,
+                { color: colors.onPrimary },
+              ]}
+            >
+              Save step
+            </Text>
+          )}
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -174,41 +238,62 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 24,
     gap: 12,
-  },
-  text: {
-    fontSize: 16,
-    color: Colors.light.text,
+    paddingBottom: 48,
   },
   label: {
     marginTop: 12,
     fontSize: 16,
-    color: Colors.light.text,
+    fontWeight: "600",
   },
   input: {
-    padding: 16,
+    minHeight: 56,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderWidth: 1,
-    borderColor: Colors.light.outline,
     borderRadius: 12,
-    backgroundColor: Colors.light.surface,
-    color: Colors.light.text,
     fontSize: 16,
   },
   noteInput: {
     minHeight: 140,
     textAlignVertical: "top",
   },
-  placeholder: {
-    color: Colors.light.textSecondary,
+  dateField: {
+    minHeight: 56,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 12,
   },
-  pressed: {
-    opacity: 0.7,
+  dateText: {
+    fontSize: 16,
+  },
+  errorContainer: {
+    minHeight: 48,
+    justifyContent: "center",
   },
   error: {
-    color: Colors.light.error,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  saveButton: {
+    minHeight: 56,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  pressed: {
+    opacity: 0.75,
+  },
+  disabled: {
+    opacity: 0.65,
   },
 });

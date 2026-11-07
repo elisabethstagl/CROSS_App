@@ -9,6 +9,7 @@ type StepRow = Omit<Step, "latitude" | "longitude" | "photoUri"> & {
   photoUri: string | null;
 };
 
+
 export async function loadTripData(
   db: SQLiteDatabase,
 ): Promise<{ trips: Trip[]; steps: Step[] }> {

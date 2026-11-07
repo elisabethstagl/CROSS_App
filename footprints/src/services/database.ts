@@ -1,31 +1,51 @@
+
 import type { SQLiteDatabase } from "expo-sqlite";
 
-export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
+const DATABASE_VERSION = 3;
+
+export async function initializeDatabase(
+  db: SQLiteDatabase
+): Promise<void> {
+  // Enable SQLite performance settings
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
   `);
 
+  // Get current database version
   const result = await db.getFirstAsync<{
     user_version: number;
   }>("PRAGMA user_version");
 
   const currentVersion = result?.user_version ?? 0;
 
-  if (currentVersion >= 1) {
+  // Database is already initialized
+  if (currentVersion >= DATABASE_VERSION) {
     return;
   }
 
+  // Reset old tables and create the correct schema.
+  // WARNING: This deletes existing trips and steps.
   await db.withTransactionAsync(async () => {
+    // Delete old tables
     await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS trips (
+      DROP TABLE IF EXISTS steps;
+      DROP TABLE IF EXISTS trips;
+    `);
+
+    // Create trips table
+    await db.execAsync(`
+      CREATE TABLE trips (
         id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
         startDate TEXT NOT NULL,
         endDate TEXT NOT NULL
       );
+    `);
 
-      CREATE TABLE IF NOT EXISTS steps (
+    // Create steps table
+    await db.execAsync(`
+      CREATE TABLE steps (
         id TEXT PRIMARY KEY NOT NULL,
         tripId TEXT NOT NULL,
         name TEXT NOT NULL,
@@ -39,11 +59,19 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
           REFERENCES trips(id)
           ON DELETE CASCADE
       );
+    `);
 
-      CREATE INDEX IF NOT EXISTS steps_tripId
-        ON steps(tripId);
+    // Create index for faster queries
+    await db.execAsync(`
+      CREATE INDEX steps_tripId
+      ON steps(tripId);
+    `);
 
-      PRAGMA user_version = 1;
+    // Save database version
+    await db.execAsync(`
+      PRAGMA user_version = 3;
     `);
   });
+
+  console.log("SQLite database initialized successfully");
 }

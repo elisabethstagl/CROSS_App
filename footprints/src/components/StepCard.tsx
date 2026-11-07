@@ -1,8 +1,19 @@
+
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { Card } from "@/components/Card";
-import { BorderRadius, Colors, IconSize, Spacing } from "@/constants/theme";
+import {
+  BorderRadius,
+  IconSize,
+  Spacing,
+} from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import type { Step } from "@/types/Step";
 import { formatDisplayDate } from "@/utils/date";
 
@@ -13,21 +24,47 @@ type StepCardProps = {
   onDelete: () => void;
 };
 
-export function StepCard({ step, onPress, onEdit, onDelete }: StepCardProps) {
+export function StepCard({
+  step,
+  onPress,
+  onEdit,
+  onDelete,
+}: StepCardProps) {
+  const colors = useTheme();
+
   return (
     <Card onPress={onPress}>
       <View style={styles.container}>
         <View style={styles.info}>
-          <Text style={styles.name}>{step.name || "Unnamed step"}</Text>
+          <Text
+            style={[
+              styles.name,
+              { color: colors.text },
+            ]}
+          >
+            {step.name || "Unnamed step"}
+          </Text>
 
-          <Text style={styles.date}>{formatDisplayDate(step.date)}</Text>
+          <Text
+            style={[
+              styles.date,
+              { color: colors.textSecondary },
+            ]}
+          >
+            {formatDisplayDate(step.date)}
+          </Text>
         </View>
 
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Edit step"
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: colors.surfaceVariant,
+              },
+            ]}
             hitSlop={8}
             onPress={(event) => {
               event.stopPropagation();
@@ -37,14 +74,19 @@ export function StepCard({ step, onPress, onEdit, onDelete }: StepCardProps) {
             <MaterialIcons
               name="edit"
               size={IconSize.medium}
-              color={Colors.light.text}
+              color={colors.text}
             />
           </Pressable>
 
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Delete step"
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: colors.surfaceVariant,
+              },
+            ]}
             hitSlop={8}
             onPress={(event) => {
               event.stopPropagation();
@@ -54,7 +96,7 @@ export function StepCard({ step, onPress, onEdit, onDelete }: StepCardProps) {
             <MaterialIcons
               name="delete-outline"
               size={IconSize.medium}
-              color={Colors.light.error}
+              color={colors.error}
             />
           </Pressable>
         </View>
@@ -76,13 +118,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontWeight: "600",
-    color: Colors.light.text,
     marginBottom: Spacing.one,
   },
 
   date: {
     fontSize: 14,
-    color: Colors.light.textSecondary,
   },
 
   actions: {
@@ -97,6 +137,5 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.light.surfaceVariant,
   },
 });
