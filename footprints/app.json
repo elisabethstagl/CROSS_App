@@ -8,7 +8,11 @@
     "scheme": "footprints",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow Footprints to take photos for your travel diary.",
+        "NSLocationWhenInUseUsageDescription": "Allow Footprints to attach your current location to a Step."
+      }
     },
     "android": {
       "adaptiveIcon": {

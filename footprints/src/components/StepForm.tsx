@@ -11,13 +11,14 @@ import {
 } from "@/services/nativeFeatures";
 
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -44,21 +45,20 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
   const colors = useTheme();
 
   const [name, setName] = useState(initialValues?.name ?? "");
-
   const [note, setNote] = useState(initialValues?.note ?? "");
 
   const [date, setDate] = useState<Date | null>(() =>
     initialValues?.date ? new Date(initialValues.date + "T12:00:00") : null,
   );
 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [latitude, setLatitude] = useState<number | undefined>(
     initialValues?.latitude,
   );
-
   const [longitude, setLongitude] = useState<number | undefined>(
     initialValues?.longitude,
   );
-
   const [placeName, setPlaceName] = useState<string | null>(null);
 
   const [photoUri, setPhotoUri] = useState<string | undefined>(
@@ -73,7 +73,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
   const submitted = useRef(false);
 
   const busy = saving || loadingLocation || loadingCamera;
-
   const hasLocation = latitude != null && longitude != null;
 
   const fieldStyle = {
@@ -88,7 +87,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
     }
 
     let active = true;
-
     setPlaceName(null);
 
     async function loadPlaceName() {
@@ -106,32 +104,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
     };
   }, [latitude, longitude]);
 
-  function openDatePicker() {
-    if (busy) return;
-
-    DateTimePickerAndroid.open({
-      mode: "date",
-      display: "calendar",
-      value: date ?? new Date(),
-      positiveButton: {
-        label: "OK",
-        textColor: colors.primary,
-      },
-      negativeButton: {
-        label: "Cancel",
-        textColor: colors.textSecondary,
-      },
-      onChange: (event, selectedDate) => {
-        if (event.type !== "set" || !selectedDate) {
-          return;
-        }
-
-        setDate(selectedDate);
-        setError(null);
-      },
-    });
-  }
-
   async function handleGetLocation() {
     if (busy) return;
 
@@ -143,7 +115,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
 
       setLatitude(location.latitude);
       setLongitude(location.longitude);
-
     } catch (error) {
       Alert.alert(
         "Location unavailable",
@@ -180,7 +151,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
 
   function handleRemovePhoto() {
     if (busy) return;
-
     setPhotoUri(undefined);
   }
 
@@ -257,14 +227,11 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
       edges={["left", "right", "bottom"]}
     >
       <ScrollView
-        style={{
-          backgroundColor: colors.background,
-        }}
+        style={{ backgroundColor: colors.background }}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
       >
-
         <Text style={[styles.label, { color: colors.text }]}>Step name</Text>
 
         <TextInput
@@ -300,11 +267,13 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           editable={!busy}
         />
 
+        {/* DATE */}
         <Text style={[styles.label, { color: colors.text }]}>Date</Text>
 
         <Pressable
+          accessibilityRole="button"
           disabled={busy}
-          onPress={openDatePicker}
+          onPress={() => setShowDatePicker(true)}
           style={[styles.input, styles.dateField, fieldStyle]}
         >
           <Text
@@ -317,6 +286,44 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           </Text>
         </Pressable>
 
+        {showDatePicker && (
+          <View>
+            <DateTimePicker
+              value={date ?? new Date()}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              themeVariant={Platform.OS === "ios" ? "light" : undefined}
+              onChange={(event, selectedDate) => {
+                if (Platform.OS === "android") {
+                  setShowDatePicker(false);
+                }
+
+                if (event.type === "set" && selectedDate) {
+                  setDate(selectedDate);
+                  setError(null);
+                }
+              }}
+            />
+
+            {Platform.OS === "ios" && (
+              <Pressable
+                onPress={() => setShowDatePicker(false)}
+                style={styles.doneButton}
+              >
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontWeight: "700",
+                  }}
+                >
+                  Done
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+
+        {/* LOCATION */}
         <Text style={[styles.label, { color: colors.text }]}>Location</Text>
 
         <View style={[styles.nativeSection, fieldStyle]}>
@@ -345,11 +352,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
               </View>
             </View>
           ) : (
-            <Text
-              style={{
-                color: colors.textSecondary,
-              }}
-            >
+            <Text style={{ color: colors.textSecondary }}>
               No location selected
             </Text>
           )}
@@ -377,9 +380,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
             <Text
               style={[
                 styles.nativeButtonText,
-                {
-                  color: colors.onPrimaryContainer,
-                },
+                { color: colors.onPrimaryContainer },
               ]}
             >
               {loadingLocation
@@ -399,6 +400,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           )}
         </View>
 
+        {/* PHOTO */}
         <Text style={[styles.label, { color: colors.text }]}>Photo</Text>
 
         <View style={[styles.nativeSection, fieldStyle]}>
@@ -450,9 +452,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
             <Text
               style={[
                 styles.nativeButtonText,
-                {
-                  color: colors.onPrimaryContainer,
-                },
+                { color: colors.onPrimaryContainer },
               ]}
             >
               {loadingCamera
@@ -486,9 +486,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           onPress={handleSaveStep}
           style={({ pressed }) => [
             styles.saveButton,
-            {
-              backgroundColor: colors.primary,
-            },
+            { backgroundColor: colors.primary },
             pressed && { opacity: 0.8 },
             busy && { opacity: 0.65 },
           ]}
@@ -510,19 +508,16 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-
   content: {
     padding: 24,
     gap: 12,
     paddingBottom: 60,
   },
-
   label: {
     marginTop: 12,
     fontSize: 16,
     fontWeight: "600",
   },
-
   input: {
     minHeight: 56,
     borderWidth: 1,
@@ -531,34 +526,32 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
-
   noteInput: {
     minHeight: 140,
     textAlignVertical: "top",
   },
-
   dateField: {
     justifyContent: "center",
   },
-
+  doneButton: {
+    alignSelf: "flex-end",
+    padding: 12,
+  },
   nativeSection: {
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
     gap: 16,
   },
-
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
-
   valueText: {
     fontSize: 16,
     fontWeight: "600",
   },
-
   nativeButton: {
     minHeight: 50,
     borderRadius: 12,
@@ -568,35 +561,29 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 12,
   },
-
   nativeButtonText: {
     fontSize: 15,
     fontWeight: "600",
   },
-
   photoPreview: {
     width: "100%",
     aspectRatio: 4 / 3,
     borderRadius: 12,
   },
-
   emptyPhoto: {
     minHeight: 130,
     alignItems: "center",
     justifyContent: "center",
   },
-
   removeText: {
     textAlign: "center",
     fontSize: 14,
     fontWeight: "500",
   },
-
   error: {
     fontSize: 14,
     marginTop: 8,
   },
-
   saveButton: {
     minHeight: 56,
     marginTop: 16,
@@ -604,7 +591,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   saveButtonText: {
     fontSize: 16,
     fontWeight: "700",
