@@ -19,6 +19,8 @@ import { BottomTabInset, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useCountriesStore } from "@/store/useCountriesStore";
 
+import AppHeader from "@/components/AppHeader";
+
 export default function ExploreScreen() {
   const colors = useTheme();
   const db = useSQLiteContext();
@@ -41,10 +43,6 @@ export default function ExploreScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      // Only generate a new batch when there
-      // are already recommendations to replace.
-      // Initial recommendations are generated
-      // by fetchCountries().
       if (useCountriesStore.getState().recommendations.length > 0) {
         discoverMore();
       }
@@ -61,11 +59,12 @@ export default function ExploreScreen() {
       edges={["top"]}
     >
       <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.text }]}>Discover</Text>
-
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Find inspiration for your next adventure.
-        </Text>
+        <View style={styles.pageHeader}>
+          <AppHeader
+            title="Discover"
+            subtitle="Find inspiration for your next adventure."
+          />
+        </View>
 
         {showLoading ? (
           <View style={styles.center}>
@@ -225,5 +224,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "600",
+  },
+  pageHeader: {
+    marginBottom: Spacing.four,
   },
 });

@@ -1,9 +1,19 @@
 import { TripCard } from "@/components/TripCard";
-import { BorderRadius, IconSize, Spacing } from "@/constants/theme";
+import {
+  BottomTabInset,
+  BorderRadius,
+  FontSize,
+  IconSize,
+  Spacing,
+} from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { useTripStore } from "@/store/tripStore";
+
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
+import AppHeader from "@/components/AppHeader";
+
 import {
   Alert,
   FlatList,
@@ -12,17 +22,16 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-import { BottomTabInset, FontSize } from "@/constants/theme";
-import { useTheme } from "@/hooks/use-theme";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const colors = useTheme();
+  const db = useSQLiteContext();
 
   const trips = useTripStore((state) => state.trips);
+
   const removeTrip = useTripStore((state) => state.removeTrip);
-  const db = useSQLiteContext();
 
   const handleAddTrip = () => {
     router.push("/trip/create");
@@ -52,10 +61,27 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={["top"]}>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[
+        styles.safeArea,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+      edges={["top"]}
+    >
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.background,
+          },
+        ]}
+      >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>My Trips</Text>
+          <View style={styles.headerTitle}>
+            <AppHeader title="My Trips" />
+          </View>
 
           <Pressable
             style={({ pressed }) => [
@@ -64,6 +90,8 @@ export default function HomeScreen() {
               pressed && styles.addButtonPressed,
             ]}
             onPress={handleAddTrip}
+            accessibilityRole="button"
+            accessibilityLabel="Create trip"
           >
             <MaterialIcons
               name="add"
@@ -77,20 +105,27 @@ export default function HomeScreen() {
           data={trips}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[
+            styles.list,
+            trips.length === 0 && styles.emptyList,
+          ]}
           renderItem={({ item }) => (
             <TripCard
               trip={item}
               onPress={() => {
                 router.push({
                   pathname: "/trip/[id]",
-                  params: { id: item.id },
+                  params: {
+                    id: item.id,
+                  },
                 });
               }}
               onEdit={() => {
                 router.push({
                   pathname: "/trip/edit",
-                  params: { id: item.id },
+                  params: {
+                    id: item.id,
+                  },
                 });
               }}
               onDelete={() => {
@@ -98,6 +133,30 @@ export default function HomeScreen() {
               }}
             />
           )}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <MaterialIcons
+                name="luggage"
+                size={52}
+                color={colors.textSecondary}
+              />
+
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
+                No trips yet
+              </Text>
+
+              <Text
+                style={[
+                  styles.emptyDescription,
+                  {
+                    color: colors.textSecondary,
+                  },
+                ]}
+              >
+                Create your first trip and start collecting memories.
+              </Text>
+            </View>
+          }
         />
       </View>
     </SafeAreaView>
@@ -117,33 +176,24 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Spacing.four,
+    justifyContent: "space-between",
+    marginBottom: Spacing.three,
+    gap: Spacing.two,
   },
 
-  title: {
-    fontSize: FontSize.screenTitle,
-    fontWeight: "700",
-    marginBottom: Spacing.two,
+  headerTitle: {
+    flex: 1,
+    minWidth: 0,
   },
 
   addButton: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
+    flexShrink: 0,
     borderRadius: BorderRadius.large,
     alignItems: "center",
     justifyContent: "center",
-
-    elevation: 4,
-
-    shadowColor: "#000000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
   },
 
   addButtonPressed: {
@@ -153,5 +203,28 @@ const styles = StyleSheet.create({
   list: {
     gap: Spacing.three,
     paddingBottom: BottomTabInset + Spacing.three,
+  },
+
+  emptyList: {
+    flexGrow: 1,
+  },
+
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: Spacing.four,
+    gap: Spacing.three,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  emptyDescription: {
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: "center",
   },
 });

@@ -16,6 +16,10 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCountriesStore } from "@/store/useCountriesStore";
 import { loadFavourites } from "@/services/database/favouritesStorage";
 
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
+import { Text, View } from "react-native";
+import FootprintsLogo from "@/components/FootprintsLogo";
+
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
@@ -67,6 +71,48 @@ export default function RootLayout() {
     contentStyle: {
       backgroundColor: colors.background,
     },
+
+    headerTitle: ({ children }: { children: string }) => (
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <FootprintsLogo size={28} />
+
+        <View
+          style={{
+            flexShrink: 1,
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: colors.primary,
+              fontSize: 10,
+              fontWeight: "800",
+              letterSpacing: 1.5,
+            }}
+          >
+            FOOTPRINTS
+          </Text>
+
+          <Text
+            numberOfLines={1}
+            style={{
+              color: colors.text,
+              fontSize: 16,
+              fontWeight: "600",
+              marginTop: 1,
+            }}
+          >
+            {children}
+          </Text>
+        </View>
+      </View>
+    ),
   };
 
   return (
@@ -74,7 +120,15 @@ export default function RootLayout() {
       <ThemeProvider value={navigationTheme}>
         <StatusBar style={isDark ? "light" : "dark"} />
 
-        <Stack screenOptions={headerOptions}>
+        <Stack
+          screenOptions={{
+            ...headerOptions,
+            animation: "fade",
+            contentStyle: {
+              backgroundColor: colors.background,
+            },
+          }}
+        >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
           <Stack.Screen
