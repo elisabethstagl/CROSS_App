@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 type ColumnInfo = {
   name: string;
@@ -47,8 +47,6 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
     return;
   }
 
-  // A migration changes the schema, never deletes
-  // existing Trips or Steps.
   await db.withExclusiveTransactionAsync(async (tx) => {
     await tx.execAsync(`
         CREATE TABLE IF NOT EXISTS trips (
@@ -74,7 +72,6 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
         );
       `);
 
-    // Repair missing columns in older databases.
     await ensureColumn(tx, "trips", "name", "TEXT NOT NULL DEFAULT ''");
 
     await ensureColumn(tx, "trips", "startDate", "TEXT NOT NULL DEFAULT ''");
@@ -97,6 +94,13 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
         CREATE INDEX IF NOT EXISTS steps_tripId
         ON steps(tripId);
       `);
+
+    await tx.execAsync(`
+        CREATE TABLE IF NOT EXISTS favourite_countries (
+          code TEXT PRIMARY KEY NOT NULL,
+          data TEXT NOT NULL
+      );
+    `);
 
     await tx.execAsync(`PRAGMA user_version = ${DATABASE_VERSION};`);
   });
