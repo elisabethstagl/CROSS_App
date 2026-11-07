@@ -34,7 +34,14 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Footprints to use your location.",
+          "locationWhenInUsePermission": "Allow Footprints to use your location."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

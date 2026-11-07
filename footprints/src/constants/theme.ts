@@ -74,6 +74,12 @@ export const Fonts = Platform.select({
   },
 });
 
+export const FontSize = {
+  screenTitle: 30,
+  sectionTitle: 20,
+  body: 14,
+};
+
 export const Spacing = {
   half: 2,
   one: 4,
