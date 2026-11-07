@@ -12,24 +12,60 @@ export async function getCurrentStepLocation(): Promise<StepLocation> {
 
   if (!permission.granted) {
     throw new Error(
-      "Location permission was denied. You can enable it in Android Settings.",
+      "Location permission was denied. Enable it in Android Settings.",
     );
   }
 
   const enabled = await Location.hasServicesEnabledAsync();
 
   if (!enabled) {
-    throw new Error("Please enable location services on your device.");
+    throw new Error("Location services are disabled. Please enable GPS.");
   }
 
-  const position = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.High,
+  // First try a recently cached location.
+  // This can work even without an internet connection.
+  const cached = await Location.getLastKnownPositionAsync({
+    maxAge: 5 * 60 * 1000,
+    requiredAccuracy: 1000,
   });
 
-  return {
-    latitude: position.coords.latitude,
-    longitude: position.coords.longitude,
-  };
+  if (cached) {
+    return {
+      latitude: cached.coords.latitude,
+      longitude: cached.coords.longitude,
+    };
+  }
+
+  // Otherwise request a fresh GPS position.
+  // Balanced accuracy is usually faster than High.
+  const positionPromise = Location.getCurrentPositionAsync({
+    accuracy: Location.Accuracy.Balanced,
+  });
+
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(
+        new Error(
+          "Location could not be determined within 15 seconds. Try moving outdoors or enabling GPS.",
+        ),
+      );
+    }, 15000);
+  });
+
+  try {
+    const position = await Promise.race([positionPromise, timeoutPromise]);
+
+    return {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    };
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 }
 
 export async function takeStepPhoto(): Promise<string | null> {
