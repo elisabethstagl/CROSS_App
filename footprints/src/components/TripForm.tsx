@@ -1,11 +1,13 @@
-
 import { useTheme } from "@/hooks/use-theme";
 import type { Trip } from "@/types/Trip";
 import { formatDisplayDate, isValidDate } from "@/utils/date";
-import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRef, useState } from "react";
+
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +15,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type TripFormProps = {
@@ -24,49 +27,41 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
   const colors = useTheme();
 
   const [name, setName] = useState(initialValues?.name ?? "");
+
   const [startDate, setStartDate] = useState(initialValues?.startDate ?? "");
+
   const [endDate, setEndDate] = useState(initialValues?.endDate ?? "");
+
+  const [activeDateField, setActiveDateField] = useState<
+    "start" | "end" | null
+  >(null);
+
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const submitted = useRef(false);
 
-  function openDatePicker(field: "start" | "end") {
-    if (saving) return;
+  function pickerValue(value: string): Date {
+    if (!value) return new Date();
 
-    const currentValue = field === "start" ? startDate : endDate;
-    const parsedDate = new Date(currentValue + "T12:00:00");
+    const parsed = new Date(value + "T12:00:00");
 
-    DateTimePickerAndroid.open({
-      mode: "date",
-      display: "calendar",
-      value: Number.isNaN(parsedDate.getTime())
-        ? new Date()
-        : parsedDate,
-      positiveButton: {
-        label: "OK",
-        textColor: colors.primary,
-      },
-      negativeButton: {
-        label: "Cancel",
-        textColor: colors.textSecondary,
-      },
-      onChange: (event, selectedDate) => {
-        if (event.type !== "set" || !selectedDate) return;
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  }
 
-        const year = selectedDate.getFullYear();
-        const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
-        const day = String(selectedDate.getDate()).padStart(2, "0");
-        const formattedDate = `${year}-${month}-${day}`;
+  function selectDate(field: "start" | "end", selectedDate: Date) {
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(selectedDate.getDate()).padStart(2, "0");
 
-        if (field === "start") {
-          setStartDate(formattedDate);
-        } else {
-          setEndDate(formattedDate);
-        }
+    const formattedDate = `${year}-${month}-${day}`;
 
-        setError(null);
-      },
-    });
+    if (field === "start") {
+      setStartDate(formattedDate);
+    } else {
+      setEndDate(formattedDate);
+    }
+
+    setError(null);
   }
 
   async function handleSaveTrip() {
@@ -122,16 +117,11 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
       >
-        <Text style={[styles.label, { color: colors.text }]}>
-          Trip name
-        </Text>
+        {/* TRIP NAME */}
+        <Text style={[styles.label, { color: colors.text }]}>Trip name</Text>
 
         <TextInput
-          style={[
-            styles.input,
-            fieldStyle,
-            { color: colors.text },
-          ]}
+          style={[styles.input, fieldStyle, { color: colors.text }]}
           value={name}
           onChangeText={(text) => {
             setName(text);
@@ -144,15 +134,14 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           editable={!saving}
         />
 
-        <Text style={[styles.label, { color: colors.text }]}>
-          Start date
-        </Text>
+        {/* START DATE */}
+        <Text style={[styles.label, { color: colors.text }]}>Start date</Text>
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Select start date: ${startDate || "not selected"}`}
           disabled={saving}
-          onPress={() => openDatePicker("start")}
+          onPress={() => setActiveDateField("start")}
           style={({ pressed }) => [
             styles.dateField,
             fieldStyle,
@@ -163,27 +152,22 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
             style={[
               styles.dateText,
               {
-                color: startDate
-                  ? colors.text
-                  : colors.textSecondary,
+                color: startDate ? colors.text : colors.textSecondary,
               },
             ]}
           >
-            {startDate
-              ? formatDisplayDate(startDate)
-              : "Select start date"}
+            {startDate ? formatDisplayDate(startDate) : "Select start date"}
           </Text>
         </Pressable>
 
-        <Text style={[styles.label, { color: colors.text }]}>
-          End date
-        </Text>
+        {/* END DATE */}
+        <Text style={[styles.label, { color: colors.text }]}>End date</Text>
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Select end date: ${endDate || "not selected"}`}
           disabled={saving}
-          onPress={() => openDatePicker("end")}
+          onPress={() => setActiveDateField("end")}
           style={({ pressed }) => [
             styles.dateField,
             fieldStyle,
@@ -194,18 +178,54 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
             style={[
               styles.dateText,
               {
-                color: endDate
-                  ? colors.text
-                  : colors.textSecondary,
+                color: endDate ? colors.text : colors.textSecondary,
               },
             ]}
           >
-            {endDate
-              ? formatDisplayDate(endDate)
-              : "Select end date"}
+            {endDate ? formatDisplayDate(endDate) : "Select end date"}
           </Text>
         </Pressable>
 
+        {/* NATIVE DATE PICKER */}
+        {activeDateField !== null && (
+          <View>
+            <DateTimePicker
+              key={activeDateField}
+              value={pickerValue(
+                activeDateField === "start" ? startDate : endDate,
+              )}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={(event, selectedDate) => {
+                if (Platform.OS === "android") {
+                  setActiveDateField(null);
+                }
+
+                if (event.type === "set" && selectedDate) {
+                  selectDate(activeDateField, selectedDate);
+                }
+              }}
+            />
+
+            {Platform.OS === "ios" && (
+              <Pressable
+                onPress={() => setActiveDateField(null)}
+                style={styles.doneButton}
+              >
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontWeight: "700",
+                  }}
+                >
+                  Done
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+
+        {/* ERROR */}
         <View style={styles.errorContainer}>
           {error && (
             <Text
@@ -217,6 +237,7 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           )}
         </View>
 
+        {/* SAVE */}
         <Pressable
           accessibilityRole="button"
           disabled={saving}
@@ -231,12 +252,7 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           {saving ? (
             <ActivityIndicator color={colors.onPrimary} />
           ) : (
-            <Text
-              style={[
-                styles.saveButtonText,
-                { color: colors.onPrimary },
-              ]}
-            >
+            <Text style={[styles.saveButtonText, { color: colors.onPrimary }]}>
               Save trip
             </Text>
           )}
@@ -278,6 +294,10 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 16,
+  },
+  doneButton: {
+    alignSelf: "flex-end",
+    padding: 12,
   },
   errorContainer: {
     minHeight: 48,

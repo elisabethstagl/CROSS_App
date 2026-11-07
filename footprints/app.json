@@ -8,7 +8,11 @@
     "scheme": "footprints",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow Footprints to take photos for your travel diary.",
+        "NSLocationWhenInUseUsageDescription": "Allow Footprints to attach your current location to a Step."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -40,6 +44,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Footprints to use your location.",
           "locationWhenInUsePermission": "Allow Footprints to use your location."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow Footprints to take photos for your travel diary.",
+          "microphonePermission": false
         }
       ]
     ],
