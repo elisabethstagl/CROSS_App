@@ -25,7 +25,6 @@ export default function StepDetailsScreen() {
   const latitude = step?.latitude;
   const longitude = step?.longitude;
 
-  // Convert saved GPS coordinates into a city and country.
   useEffect(() => {
     if (latitude == null || longitude == null) {
       setPlaceName(null);
@@ -89,17 +88,14 @@ export default function StepDetailsScreen() {
         }}
         contentContainerStyle={styles.content}
       >
-        {/* STEP NAME */}
         <Text style={[styles.title, { color: colors.text }]}>
           {step.name || "Unnamed step"}
         </Text>
 
-        {/* DATE */}
         <Text style={[styles.date, { color: colors.textSecondary }]}>
           {formatDisplayDate(step.date)}
         </Text>
 
-        {/* PHOTO */}
         {step.photoUri && (
           <Image
             source={{ uri: step.photoUri }}
@@ -109,7 +105,6 @@ export default function StepDetailsScreen() {
           />
         )}
 
-        {/* NOTE */}
         {step.note.trim().length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -122,7 +117,6 @@ export default function StepDetailsScreen() {
           </>
         )}
 
-        {/* LOCATION */}
         {latitude != null && longitude != null && (
           <>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>

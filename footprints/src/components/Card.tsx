@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { Pressable, StyleSheet } from "react-native";
 

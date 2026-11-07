@@ -17,9 +17,7 @@ export async function loadCachedCountries(
   for (const row of rows) {
     try {
       countries.push(JSON.parse(row.data) as Country);
-    } catch {
-      // Ignore invalid cached data.
-    }
+    } catch {}
   }
 
   return countries.sort((a, b) => a.name.localeCompare(b.name));

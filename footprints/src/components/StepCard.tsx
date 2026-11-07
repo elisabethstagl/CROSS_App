@@ -1,21 +1,13 @@
-
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/Card";
-import {
-  BorderRadius,
-  IconSize,
-  Spacing,
-} from "@/constants/theme";
+import { BorderRadius, IconSize, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { Step } from "@/types/Step";
 import { formatDisplayDate } from "@/utils/date";
+
+import { Image } from "expo-image";
 
 type StepCardProps = {
   step: Step;
@@ -24,33 +16,40 @@ type StepCardProps = {
   onDelete: () => void;
 };
 
-export function StepCard({
-  step,
-  onPress,
-  onEdit,
-  onDelete,
-}: StepCardProps) {
+export function StepCard({ step, onPress, onEdit, onDelete }: StepCardProps) {
   const colors = useTheme();
 
   return (
     <Card onPress={onPress}>
       <View style={styles.container}>
-        <View style={styles.info}>
-          <Text
+        {step.photoUri ? (
+          <Image
+            source={{ uri: step.photoUri }}
+            style={styles.thumbnail}
+            contentFit="cover"
+            accessibilityLabel={`Photo of ${step.name}`}
+          />
+        ) : (
+          <View
             style={[
-              styles.name,
-              { color: colors.text },
+              styles.thumbnail,
+              styles.placeholder,
+              { backgroundColor: colors.surfaceVariant },
             ]}
           >
+            <MaterialIcons
+              name="image"
+              size={28}
+              color={colors.textSecondary}
+            />
+          </View>
+        )}
+        <View style={styles.info}>
+          <Text style={[styles.name, { color: colors.text }]}>
             {step.name || "Unnamed step"}
           </Text>
 
-          <Text
-            style={[
-              styles.date,
-              { color: colors.textSecondary },
-            ]}
-          >
+          <Text style={[styles.date, { color: colors.textSecondary }]}>
             {formatDisplayDate(step.date)}
           </Text>
         </View>
@@ -135,6 +134,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  thumbnail: {
+    width: 76,
+    height: 76,
+    borderRadius: BorderRadius.medium,
+    marginRight: Spacing.three,
+  },
+
+  placeholder: {
     alignItems: "center",
     justifyContent: "center",
   },

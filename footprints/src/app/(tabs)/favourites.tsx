@@ -7,6 +7,8 @@ import { BottomTabInset, FontSize, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useCountriesStore } from "@/store/useCountriesStore";
 
+import AppHeader from "@/components/AppHeader";
+
 export default function FavouritesScreen() {
   const colors = useTheme();
 
@@ -18,11 +20,12 @@ export default function FavouritesScreen() {
       edges={["top"]}
     >
       <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.text }]}>Favourites</Text>
-
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Countries you want to visit.
-        </Text>
+        <View style={styles.pageHeader}>
+          <AppHeader
+            title="Favourites"
+            subtitle="Countries you want to visit."
+          />
+        </View>
 
         <FlatList
           data={favourites}
@@ -107,5 +110,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     lineHeight: 21,
+  },
+  pageHeader: {
+    marginBottom: Spacing.four,
   },
 });
