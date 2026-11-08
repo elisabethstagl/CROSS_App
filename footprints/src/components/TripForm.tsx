@@ -117,7 +117,6 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
       >
-        {/* TRIP NAME */}
         <Text style={[styles.label, { color: colors.text }]}>Trip name</Text>
 
         <TextInput
@@ -134,7 +133,6 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           editable={!saving}
         />
 
-        {/* START DATE */}
         <Text style={[styles.label, { color: colors.text }]}>Start date</Text>
 
         <Pressable
@@ -160,7 +158,6 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           </Text>
         </Pressable>
 
-        {/* END DATE */}
         <Text style={[styles.label, { color: colors.text }]}>End date</Text>
 
         <Pressable
@@ -186,7 +183,6 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           </Text>
         </Pressable>
 
-        {/* NATIVE DATE PICKER */}
         {activeDateField !== null && (
           <View>
             <DateTimePicker
@@ -225,7 +221,6 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           </View>
         )}
 
-        {/* ERROR */}
         <View style={styles.errorContainer}>
           {error && (
             <Text
@@ -237,7 +232,6 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
           )}
         </View>
 
-        {/* SAVE */}
         <Pressable
           accessibilityRole="button"
           disabled={saving}

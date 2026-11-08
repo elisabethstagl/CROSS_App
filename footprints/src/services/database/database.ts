@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-const DATABASE_VERSION = 6;
+const DATABASE_VERSION = 7;
 
 type ColumnInfo = {
   name: string;
@@ -106,6 +106,14 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
       CREATE TABLE IF NOT EXISTS cached_countries (
         code TEXT PRIMARY KEY NOT NULL,
         data TEXT NOT NULL
+      );
+    `);
+
+    await tx.execAsync(`
+      CREATE TABLE IF NOT EXISTS daily_country_selection (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        selectedOn TEXT NOT NULL,
+        countryCodes TEXT NOT NULL
       );
     `);
 

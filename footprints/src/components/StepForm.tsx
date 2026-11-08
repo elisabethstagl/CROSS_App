@@ -3,15 +3,15 @@ import type { Step } from "@/types/Step";
 import { formatDisplayDate, toStorageDate } from "@/utils/date";
 
 import {
+  deleteStepPhoto,
   getCurrentStepLocation,
   getPlaceName,
-  takeStepPhoto,
   saveStepPhoto,
-  deleteStepPhoto,
+  takeStepPhoto,
 } from "@/services/nativeFeatures";
 
-import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 
@@ -267,7 +267,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           editable={!busy}
         />
 
-        {/* DATE */}
         <Text style={[styles.label, { color: colors.text }]}>Date</Text>
 
         <Pressable
@@ -323,7 +322,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           </View>
         )}
 
-        {/* LOCATION */}
         <Text style={[styles.label, { color: colors.text }]}>Location</Text>
 
         <View style={[styles.nativeSection, fieldStyle]}>
@@ -400,7 +398,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           )}
         </View>
 
-        {/* PHOTO */}
         <Text style={[styles.label, { color: colors.text }]}>Photo</Text>
 
         <View style={[styles.nativeSection, fieldStyle]}>
@@ -472,14 +469,16 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
           )}
         </View>
 
-        {error && (
-          <Text
-            accessibilityRole="alert"
-            style={[styles.error, { color: colors.error }]}
-          >
-            {error}
-          </Text>
-        )}
+        <View style={styles.errorContainer}>
+          {error && (
+            <Text
+              accessibilityRole="alert"
+              style={[styles.error, { color: colors.error }]}
+            >
+              {error}
+            </Text>
+          )}
+        </View>
 
         <Pressable
           disabled={busy}
@@ -580,13 +579,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+  errorContainer: {
+    minHeight: 48,
+    justifyContent: "center",
+  },
   error: {
     fontSize: 14,
-    marginTop: 8,
+    lineHeight: 20,
   },
   saveButton: {
     minHeight: 56,
-    marginTop: 16,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",

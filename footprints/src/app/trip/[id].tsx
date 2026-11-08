@@ -1,4 +1,3 @@
-
 import { StepCard } from "@/components/StepCard";
 import { BorderRadius, IconSize } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
@@ -6,11 +5,7 @@ import { useTripStore } from "@/store/tripStore";
 import { formatDisplayDate } from "@/utils/date";
 
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-import {
-  router,
-  Stack,
-  useLocalSearchParams,
-} from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 
 import {
@@ -32,65 +27,45 @@ export default function TripDetailsScreen() {
   const db = useSQLiteContext();
 
   const trip = useTripStore((state) =>
-    state.trips.find((item) => item.id === id)
+    state.trips.find((item) => item.id === id),
   );
 
   const allSteps = useTripStore((state) => state.steps);
 
-  const steps = allSteps.filter(
-    (step) => step.tripId === id
-  );
+  const steps = allSteps.filter((step) => step.tripId === id);
 
-  const removeStep = useTripStore(
-    (state) => state.removeStep
-  );
+  const removeStep = useTripStore((state) => state.removeStep);
 
   function handleDeleteStep(stepId: string) {
-    Alert.alert(
-      "Delete step",
-      "Are you sure you want to delete this step?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
+    Alert.alert("Delete step", "Are you sure you want to delete this step?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await removeStep(stepId, db);
+          } catch {
+            Alert.alert(
+              "Delete failed",
+              "Could not delete the step. Please try again.",
+            );
+          }
         },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await removeStep(stepId, db);
-            } catch {
-              Alert.alert(
-                "Delete failed",
-                "Could not delete the step. Please try again."
-              );
-            }
-          },
-        },
-      ]
-    );
+      },
+    ]);
   }
 
   if (!trip) {
     return (
-      <View
-        style={[
-          styles.screen,
-          { backgroundColor: colors.background },
-        ]}
-      >
-        <Stack.Screen
-          options={{ title: "Trip details" }}
-        />
+      <View style={[styles.screen, { backgroundColor: colors.background }]}>
+        <Stack.Screen options={{ title: "Trip details" }} />
 
         <View style={styles.content}>
-          <Text
-            style={[
-              styles.text,
-              { color: colors.text },
-            ]}
-          >
+          <Text style={[styles.text, { color: colors.text }]}>
             Trip not found.
           </Text>
         </View>
@@ -100,24 +75,10 @@ export default function TripDetailsScreen() {
 
   return (
     <SafeAreaView
-      style={[
-        styles.screen,
-        { backgroundColor: colors.background },
-      ]}
+      style={[styles.screen, { backgroundColor: colors.background }]}
       edges={["left", "right", "bottom"]}
     >
-      <Stack.Screen
-        options={{
-          title: trip.name,
-          headerStyle: {
-            backgroundColor: colors.background,
-          },
-          headerTintColor: colors.text,
-          headerTitleStyle: {
-            color: colors.text,
-          },
-        }}
-      />
+      <Stack.Screen options={{ title: trip.name }} />
 
       <ScrollView
         style={{
@@ -163,12 +124,7 @@ export default function TripDetailsScreen() {
           </Pressable>
         </View>
 
-        <Text
-          style={[
-            styles.text,
-            { color: colors.textSecondary },
-          ]}
-        >
+        <Text style={[styles.text, { color: colors.textSecondary }]}>
           {formatDisplayDate(trip.startDate)}
           {" – "}
           {formatDisplayDate(trip.endDate)}
@@ -190,9 +146,7 @@ export default function TripDetailsScreen() {
                 params: { id: step.id },
               });
             }}
-            onDelete={() =>
-              handleDeleteStep(step.id)
-            }
+            onDelete={() => handleDeleteStep(step.id)}
           />
         ))}
       </ScrollView>

@@ -1,57 +1,67 @@
-import { useCallback, useEffect } from "react";
+import AppHeader from "@/components/AppHeader";
+import CountryCard from "@/components/CountryCard";
+import { BottomTabInset, Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
+import { useCountriesStore } from "@/store/useCountriesStore";
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-
+import { useCallback } from "react";
 import {
   ActivityIndicator,
+  AppState,
   FlatList,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@react-native-vector-icons/material-icons";
-
-import CountryCard from "@/components/CountryCard";
-import { BottomTabInset, Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/use-theme";
-import { useCountriesStore } from "@/store/useCountriesStore";
-
-import AppHeader from "@/components/AppHeader";
 
 export default function ExploreScreen() {
   const colors = useTheme();
   const db = useSQLiteContext();
-
-  const countries = useCountriesStore((state) => state.countries);
-
   const recommendations = useCountriesStore((state) => state.recommendations);
-
   const loading = useCountriesStore((state) => state.loading);
-
   const error = useCountriesStore((state) => state.error);
-
   const fetchCountries = useCountriesStore((state) => state.fetchCountries);
-
   const discoverMore = useCountriesStore((state) => state.discoverMore);
-
-  useEffect(() => {
-    void fetchCountries(db);
-  }, [db, fetchCountries]);
 
   useFocusEffect(
     useCallback(() => {
-      if (useCountriesStore.getState().recommendations.length > 0) {
-        discoverMore();
-      }
-    }, [discoverMore]),
+      void fetchCountries(db);
+
+      const subscription = AppState.addEventListener("change", (state) => {
+        if (state === "active") {
+          void fetchCountries(db);
+        }
+      });
+
+      return () => subscription.remove();
+    }, [db, fetchCountries]),
   );
 
-  const showLoading = loading && countries.length === 0;
+  {
+    error && recommendations.length > 0 && (
+      <Text
+        accessibilityLiveRegion="polite"
+        style={[
+          styles.message,
+          {
+            color: colors.error,
+            marginBottom: Spacing.three,
+          },
+        ]}
+      >
+        Could not update recommendations. Your previous selection is still
+        shown.
+      </Text>
+    );
+  }
 
-  const showError = !!error && countries.length === 0;
+  const showLoading = loading && recommendations.length === 0;
+
+  const showError = !!error && recommendations.length === 0;
 
   return (
     <SafeAreaView
@@ -128,7 +138,8 @@ export default function ExploreScreen() {
             ListFooterComponent={
               recommendations.length > 0 ? (
                 <Pressable
-                  onPress={discoverMore}
+                  onPress={() => void discoverMore(db)}
+                  disabled={loading}
                   accessibilityRole="button"
                   style={[
                     styles.button,
@@ -137,9 +148,17 @@ export default function ExploreScreen() {
                     },
                   ]}
                 >
-                  <MaterialIcons name="refresh" size={22} color="#FFFFFF" />
+                  {!loading && (
+                    <MaterialIcons
+                      name="refresh"
+                      size={22}
+                      color={colors.onPrimary}
+                    />
+                  )}
 
-                  <Text style={styles.buttonText}>Discover more</Text>
+                  <Text style={styles.buttonText}>
+                    {loading ? "Saving..." : "Discover more"}
+                  </Text>
                 </Pressable>
               ) : undefined
             }
