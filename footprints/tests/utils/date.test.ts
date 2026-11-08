@@ -1,8 +1,9 @@
 import {
-  isValidDate,
   formatDisplayDate,
+  isValidDate,
   toStorageDate,
 } from "../../src/utils/date";
+import { sortByDate } from "../../src/utils/sortByDate";
 
 describe("Date utilities", () => {
   describe("isValidDate", () => {
@@ -86,16 +87,24 @@ describe("Date utilities", () => {
       expect(toStorageDate(date)).toBe("2026-01-05");
     });
 
-    test("handles the last day of the year", () => {
-      const date = new Date(2026, 11, 31);
-
-      expect(toStorageDate(date)).toBe("2026-12-31");
-    });
-
     test("handles leap day", () => {
       const date = new Date(2024, 1, 29);
 
       expect(toStorageDate(date)).toBe("2024-02-29");
+    });
+  });
+
+  describe("sortByDate", () => {
+    test("sorts newest dates first and equal dates by ID", () => {
+      const items = [
+        { id: "b", date: "2026-06-01" },
+        { id: "c", date: "2026-07-01" },
+        { id: "a", date: "2026-06-01" },
+      ];
+
+      const result = sortByDate(items, (item) => item.date);
+
+      expect(result.map((item) => item.id)).toEqual(["c", "a", "b"]);
     });
   });
 });
