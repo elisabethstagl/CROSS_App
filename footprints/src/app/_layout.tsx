@@ -1,23 +1,20 @@
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
+import FootprintsLogo from "@/components/FootprintsLogo";
+import OfflineBanner from "@/components/OfflineBanner";
 import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { initializeDatabase } from "@/services/database/database";
+import { loadFavourites } from "@/services/database/favouritesStorage";
 import { loadTripData } from "@/services/database/tripStorage";
 import { useTripStore } from "@/store/tripStore";
-
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
-
-import * as SplashScreen from "expo-splash-screen";
-
-import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
-
-import { StatusBar } from "expo-status-bar";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-
 import { useCountriesStore } from "@/store/useCountriesStore";
-import { loadFavourites } from "@/services/database/favouritesStorage";
-
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
+import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
+import { useEffect } from "react";
 import { Text, View } from "react-native";
-import FootprintsLogo from "@/components/FootprintsLogo";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -46,6 +43,14 @@ export default function RootLayout() {
 
   const colors = isDark ? Colors.dark : Colors.light;
 
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.background).catch(
+      (error: unknown) => {
+        console.warn("Could not update app background.", error);
+      },
+    );
+  }, [colors.background]);
+
   const navigationTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),
     colors: {
@@ -59,16 +64,16 @@ export default function RootLayout() {
     },
   };
 
-  const headerOptions = {
+  const headerOptions = (theme: typeof DefaultTheme) => ({
     headerStyle: {
-      backgroundColor: colors.background,
+      backgroundColor: theme.colors.background,
     },
-    headerTintColor: colors.text,
+    headerTintColor: theme.colors.text,
     headerTitleStyle: {
-      color: colors.text,
+      color: theme.colors.text,
     },
     contentStyle: {
-      backgroundColor: colors.background,
+      backgroundColor: theme.colors.background,
     },
 
     headerTitle: ({ children }: { children: string }) => (
@@ -81,15 +86,10 @@ export default function RootLayout() {
       >
         <FootprintsLogo size={28} />
 
-        <View
-          style={{
-            flexShrink: 1,
-            justifyContent: "center",
-          }}
-        >
+        <View style={{ flexShrink: 1 }}>
           <Text
             style={{
-              color: colors.primary,
+              color: theme.colors.primary,
               fontSize: 10,
               fontWeight: "800",
               letterSpacing: 1.5,
@@ -101,7 +101,7 @@ export default function RootLayout() {
           <Text
             numberOfLines={1}
             style={{
-              color: colors.text,
+              color: theme.colors.text,
               fontSize: 16,
               fontWeight: "600",
               marginTop: 1,
@@ -112,59 +112,42 @@ export default function RootLayout() {
         </View>
       </View>
     ),
-  };
+  });
 
   return (
-    <SQLiteProvider databaseName="footprints.db" onInit={initializeApp}>
-      <ThemeProvider value={navigationTheme}>
-        <StatusBar style={isDark ? "light" : "dark"} />
+    <ThemeProvider value={navigationTheme}>
+      <StatusBar style={isDark ? "light" : "dark"} />
 
-        <Stack
-          screenOptions={{
-            ...headerOptions,
-            animation: "fade",
-            contentStyle: {
-              backgroundColor: colors.background,
-            },
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <SQLiteProvider databaseName="footprints.db" onInit={initializeApp}>
+        <View style={{ flex: 1 }}>
+          <Stack
+            screenOptions={({ theme }) => ({
+              ...headerOptions(theme),
+              animation: "fade",
+            })}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-          <Stack.Screen
-            name="trip/create"
-            options={{
-              ...headerOptions,
-              title: "Create trip",
-            }}
-          />
+            <Stack.Screen
+              name="trip/create"
+              options={{ title: "Create trip" }}
+            />
 
-          <Stack.Screen
-            name="trip/edit"
-            options={{
-              ...headerOptions,
-              title: "Edit trip",
-            }}
-          />
+            <Stack.Screen name="trip/edit" options={{ title: "Edit trip" }} />
 
-          <Stack.Screen
-            name="step/create"
-            options={{
-              ...headerOptions,
-              title: "Create step",
-            }}
-          />
+            <Stack.Screen
+              name="step/create"
+              options={{ title: "Create step" }}
+            />
 
-          <Stack.Screen
-            name="step/edit"
-            options={{
-              ...headerOptions,
-              title: "Edit step",
-            }}
-          />
-        </Stack>
+            <Stack.Screen name="step/edit" options={{ title: "Edit step" }} />
+          </Stack>
 
-        <AnimatedSplashOverlay />
-      </ThemeProvider>
-    </SQLiteProvider>
+          <OfflineBanner />
+
+          <AnimatedSplashOverlay />
+        </View>
+      </SQLiteProvider>
+    </ThemeProvider>
   );
 }
