@@ -1,22 +1,17 @@
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
+import FootprintsLogo from "@/components/FootprintsLogo";
+import OfflineBanner from "@/components/OfflineBanner";
 import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { initializeDatabase } from "@/services/database/database";
+import { loadFavourites } from "@/services/database/favouritesStorage";
 import { loadTripData } from "@/services/database/tripStorage";
 import { useTripStore } from "@/store/tripStore";
-
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
-
-import * as SplashScreen from "expo-splash-screen";
-
-import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { StatusBar } from "expo-status-bar";
-
-import { loadFavourites } from "@/services/database/favouritesStorage";
 import { useCountriesStore } from "@/store/useCountriesStore";
-
-import FootprintsLogo from "@/components/FootprintsLogo";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
+import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 import { Text, View } from "react-native";
@@ -124,24 +119,34 @@ export default function RootLayout() {
       <StatusBar style={isDark ? "light" : "dark"} />
 
       <SQLiteProvider databaseName="footprints.db" onInit={initializeApp}>
-        <Stack
-          screenOptions={({ theme }) => ({
-            ...headerOptions(theme),
-            animation: "fade",
-          })}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <View style={{ flex: 1 }}>
+          <Stack
+            screenOptions={({ theme }) => ({
+              ...headerOptions(theme),
+              animation: "fade",
+            })}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-          <Stack.Screen name="trip/create" options={{ title: "Create trip" }} />
+            <Stack.Screen
+              name="trip/create"
+              options={{ title: "Create trip" }}
+            />
 
-          <Stack.Screen name="trip/edit" options={{ title: "Edit trip" }} />
+            <Stack.Screen name="trip/edit" options={{ title: "Edit trip" }} />
 
-          <Stack.Screen name="step/create" options={{ title: "Create step" }} />
+            <Stack.Screen
+              name="step/create"
+              options={{ title: "Create step" }}
+            />
 
-          <Stack.Screen name="step/edit" options={{ title: "Edit step" }} />
-        </Stack>
+            <Stack.Screen name="step/edit" options={{ title: "Edit step" }} />
+          </Stack>
 
-        <AnimatedSplashOverlay />
+          <OfflineBanner />
+
+          <AnimatedSplashOverlay />
+        </View>
       </SQLiteProvider>
     </ThemeProvider>
   );
