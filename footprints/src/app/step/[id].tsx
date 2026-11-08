@@ -1,11 +1,11 @@
 import { useTheme } from "@/hooks/use-theme";
+import { getPlaceName } from "@/services/nativeFeatures";
 import { useTripStore } from "@/store/tripStore";
 import { formatDisplayDate } from "@/utils/date";
-import { getPlaceName } from "@/services/nativeFeatures";
 
-import { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -69,18 +69,7 @@ export default function StepDetailsScreen() {
       style={[styles.screen, { backgroundColor: colors.background }]}
       edges={["left", "right", "bottom"]}
     >
-      <Stack.Screen
-        options={{
-          title: step.name || "Step details",
-          headerStyle: {
-            backgroundColor: colors.background,
-          },
-          headerTintColor: colors.text,
-          headerTitleStyle: {
-            color: colors.text,
-          },
-        }}
-      />
+      <Stack.Screen options={{ title: step.name || "Step details" }} />
 
       <ScrollView
         style={{

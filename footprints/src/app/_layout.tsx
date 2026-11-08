@@ -10,14 +10,16 @@ import * as SplashScreen from "expo-splash-screen";
 
 import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
 
-import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { StatusBar } from "expo-status-bar";
 
-import { useCountriesStore } from "@/store/useCountriesStore";
 import { loadFavourites } from "@/services/database/favouritesStorage";
+import { useCountriesStore } from "@/store/useCountriesStore";
 
-import { Text, View } from "react-native";
 import FootprintsLogo from "@/components/FootprintsLogo";
+import * as SystemUI from "expo-system-ui";
+import { useEffect } from "react";
+import { Text, View } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -46,6 +48,14 @@ export default function RootLayout() {
 
   const colors = isDark ? Colors.dark : Colors.light;
 
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.background).catch(
+      (error: unknown) => {
+        console.warn("Could not update app background.", error);
+      },
+    );
+  }, [colors.background]);
+
   const navigationTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),
     colors: {
@@ -59,16 +69,16 @@ export default function RootLayout() {
     },
   };
 
-  const headerOptions = {
+  const headerOptions = (theme: typeof DefaultTheme) => ({
     headerStyle: {
-      backgroundColor: colors.background,
+      backgroundColor: theme.colors.background,
     },
-    headerTintColor: colors.text,
+    headerTintColor: theme.colors.text,
     headerTitleStyle: {
-      color: colors.text,
+      color: theme.colors.text,
     },
     contentStyle: {
-      backgroundColor: colors.background,
+      backgroundColor: theme.colors.background,
     },
 
     headerTitle: ({ children }: { children: string }) => (
@@ -81,15 +91,10 @@ export default function RootLayout() {
       >
         <FootprintsLogo size={28} />
 
-        <View
-          style={{
-            flexShrink: 1,
-            justifyContent: "center",
-          }}
-        >
+        <View style={{ flexShrink: 1 }}>
           <Text
             style={{
-              color: colors.primary,
+              color: theme.colors.primary,
               fontSize: 10,
               fontWeight: "800",
               letterSpacing: 1.5,
@@ -101,7 +106,7 @@ export default function RootLayout() {
           <Text
             numberOfLines={1}
             style={{
-              color: colors.text,
+              color: theme.colors.text,
               fontSize: 16,
               fontWeight: "600",
               marginTop: 1,
@@ -112,59 +117,32 @@ export default function RootLayout() {
         </View>
       </View>
     ),
-  };
+  });
 
   return (
-    <SQLiteProvider databaseName="footprints.db" onInit={initializeApp}>
-      <ThemeProvider value={navigationTheme}>
-        <StatusBar style={isDark ? "light" : "dark"} />
+    <ThemeProvider value={navigationTheme}>
+      <StatusBar style={isDark ? "light" : "dark"} />
 
+      <SQLiteProvider databaseName="footprints.db" onInit={initializeApp}>
         <Stack
-          screenOptions={{
-            ...headerOptions,
+          screenOptions={({ theme }) => ({
+            ...headerOptions(theme),
             animation: "fade",
-            contentStyle: {
-              backgroundColor: colors.background,
-            },
-          }}
+          })}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-          <Stack.Screen
-            name="trip/create"
-            options={{
-              ...headerOptions,
-              title: "Create trip",
-            }}
-          />
+          <Stack.Screen name="trip/create" options={{ title: "Create trip" }} />
 
-          <Stack.Screen
-            name="trip/edit"
-            options={{
-              ...headerOptions,
-              title: "Edit trip",
-            }}
-          />
+          <Stack.Screen name="trip/edit" options={{ title: "Edit trip" }} />
 
-          <Stack.Screen
-            name="step/create"
-            options={{
-              ...headerOptions,
-              title: "Create step",
-            }}
-          />
+          <Stack.Screen name="step/create" options={{ title: "Create step" }} />
 
-          <Stack.Screen
-            name="step/edit"
-            options={{
-              ...headerOptions,
-              title: "Edit step",
-            }}
-          />
+          <Stack.Screen name="step/edit" options={{ title: "Edit step" }} />
         </Stack>
 
         <AnimatedSplashOverlay />
-      </ThemeProvider>
-    </SQLiteProvider>
+      </SQLiteProvider>
+    </ThemeProvider>
   );
 }
