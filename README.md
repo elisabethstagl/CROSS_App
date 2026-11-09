@@ -265,6 +265,7 @@ CROSS_App/
 │       └── ci.yml
 ├── documentation/
 │   ├── project-requirements.pdf
+│   ├── project-specification.pdf
 │   └── screenshots/
 └── footprints/
     ├── app.json
