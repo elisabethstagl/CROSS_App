@@ -2,6 +2,7 @@
 
 Footprints is a mobile travel diary for documenting trips and their individual stops, called steps. Users can save photos, notes, dates and locations, discover
 countries and keep a list of favourite destinations.
+[GitHub Repository](https://github.com/elisabethstagl/CROSS_App)
 
 ## Team
 
