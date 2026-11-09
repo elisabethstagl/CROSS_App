@@ -292,6 +292,7 @@ CROSS_App/
 Create a trip → enter its name and travel dates → save it → open the trip from the home screen.
 
 ![Home screen with saved trips](documentation/screenshots/01.png)
+![Home screen with saved trips and photos](documentation/screenshots/10.jpeg)
 ![Trip creation form](documentation/screenshots/02.png)
 ![Home screen with the new saved trip](documentation/screenshots/03.png)
 
@@ -302,6 +303,7 @@ Open a trip → add a step → enter its name and date → optionally add a phot
 ![Trip detail screen with an empty list of steps](documentation/screenshots/04.png)
 ![Step creation form](documentation/screenshots/05.png)
 ![Trip detail screen with the new saved step](documentation/screenshots/06.png)
+![Trip detail screen with the new saved step with photo](documentation/screenshots/09.jpeg)
 
 ### 3. Discover and save destinations
 
@@ -309,3 +311,8 @@ Open Discover → browse recommended destinations → mark a destination as a fa
 
 ![Discover screen with country recommendations](documentation/screenshots/07.png)
 ![Favourites screen](documentation/screenshots/08.png)
+
+### Dark Mode
+
+![Home screen](documentation/screenshots/dark-mode-1.jpeg)
+![Explore screen](documentation/screenshots/dark-mode-2.jpeg)
