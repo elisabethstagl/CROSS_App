@@ -108,6 +108,12 @@ EXPO_PUBLIC_REST_COUNTRIES_API_KEY=your_api_key_here
   npm start
   ```
 
+Alternatively, you can start the Expo development server using:
+
+```bash
+npx expo start
+```
+
 ## Troubleshooting
 
 - **Error: `adb command not found` / `Android SDK path not found`**
@@ -115,12 +121,79 @@ EXPO_PUBLIC_REST_COUNTRIES_API_KEY=your_api_key_here
 - **Port 8081 is in use**
   - **Fix**: Type `y` when prompted to switch to port 8082, or kill existing Node processes.
 
+ **Expo / Metro cache issues**
+
+If the app does not load correctly or recent code changes are not reflected, restart the Expo development server and clear the Metro cache:
+
+```bash
+npx expo start -c
+```
+
+**Android emulator connection issues**
+
+If Expo cannot connect to the Android emulator or the device is not detected, restart the Android Debug Bridge (ADB):
+
+```bash
+adb kill-server
+adb start-server
+```
+
+Check whether the emulator or connected Android device is recognized:
+
+```bash
+adb devices
+```
+
+The device should appear in the list with the status `device`.
+
+**App does not start on Android**
+
+Make sure the Android emulator is running before starting Expo:
+
+```bash
+npx expo start
+```
+
+Then press `a` in the Expo terminal to launch the app on Android.
+
+**Dependencies or installation issues**
+
+If dependencies are missing or the installation is inconsistent, reinstall them:
+
+```bash
+npm ci
+```
+
+Afterwards, restart Expo:
+
+```bash
+npx expo start -c
+```
+
+**Physical device connection issues**
+
+If the app cannot connect through Expo Go, make sure the computer and Android device are connected to the same Wi-Fi network.
+
+If the local network connection does not work, try starting Expo with a tunnel:
+
+```bash
+npx expo start --tunnel
+```
+
+Note: Tunnel mode may require installing `@expo/ngrok`.
+
 ## Tests
 
 The test suite includes tests for date utilities, sorting, trip date extension, API response handling, store behaviour, daily recommendations and UI components.
 Network requests and database functions are mocked in the relevant unit tests.
 
 Run all automated tests:
+
+```bash
+npm test
+```
+
+To run the tests sequentially (e.g., in resource-constrained environments):
 
 ```bash
 npm test -- --runInBand
