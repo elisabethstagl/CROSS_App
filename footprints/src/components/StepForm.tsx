@@ -264,14 +264,19 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
               mode="date"
               display={Platform.OS === "ios" ? "spinner" : "default"}
               themeVariant={Platform.OS === "ios" ? "light" : undefined}
-              onChange={(event, selectedDate) => {
+              onValueChange={(event, selectedDate) => {
                 if (Platform.OS === "android") {
                   setShowDatePicker(false);
                 }
 
-                if (event.type === "set" && selectedDate) {
+                if (selectedDate) {
                   setDate(selectedDate);
                   setError(null);
+                }
+              }}
+              onDismiss={() => {
+                if (Platform.OS === "android") {
+                  setShowDatePicker(false);
                 }
               }}
             />

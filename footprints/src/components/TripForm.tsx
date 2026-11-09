@@ -192,13 +192,18 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
               )}
               mode="date"
               display={Platform.OS === "ios" ? "spinner" : "default"}
-              onChange={(event, selectedDate) => {
+              onValueChange={(event, selectedDate) => {
                 if (Platform.OS === "android") {
                   setActiveDateField(null);
                 }
 
-                if (event.type === "set" && selectedDate) {
+                if (selectedDate) {
                   selectDate(activeDateField, selectedDate);
+                }
+              }}
+              onDismiss={() => {
+                if (Platform.OS === "android") {
+                  setActiveDateField(null);
                 }
               }}
             />

@@ -119,8 +119,4 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
 
     await tx.execAsync(`PRAGMA user_version = ${DATABASE_VERSION};`);
   });
-
-  console.log(
-    `Footprints database migrated from version ${currentVersion} to ${DATABASE_VERSION}`,
-  );
 }

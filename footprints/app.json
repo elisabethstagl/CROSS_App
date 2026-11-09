@@ -3,7 +3,7 @@
     "name": "footprints",
     "slug": "footprints",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "footprints",
     "userInterfaceStyle": "automatic",

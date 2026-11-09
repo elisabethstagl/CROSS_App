@@ -42,23 +42,11 @@ example
 /ios
 /android
 
-# .env
+# Environment variables and secrets
 .env
 .env.local
+.env.*
+!.env.example
 
 # tests
 coverage/
-
-# aus alltem gitgnore
-# node_modules/
-# .expo/
-# dist/
-# npm-debug.*
-# *.jks
-# *.p8
-# *.p12
-# *.key
-# *.mobileprovision
-# *.orig.*
-# web-build/
-# .env*
