@@ -122,7 +122,7 @@ npx expo start
 - **Port 8081 is in use**
   - **Fix**: Type `y` when prompted to switch to port 8082, or kill existing Node processes.
 
- **Expo / Metro cache issues**
+  **Expo / Metro cache issues**
 
 If the app does not load correctly or recent code changes are not reflected, restart the Expo development server and clear the Metro cache:
 
@@ -221,6 +221,29 @@ npm run lint
 ```
 
 The GitHub Actions workflow installs dependencies and runs ESLint and automated tests on every push and pull request.
+
+## Database
+
+The app stores its local data in a SQLite database named `footprints.db`.
+
+To inspect the database during development:
+
+1. Run `npm start` and open the app on an emulator or device.
+2. Press Shift + M in the Expo terminal.
+3. Select "Open expo-sqlite".
+4. Select `footprints.db` and open a table to view its records.
+
+The database contains these tables:
+
+| Table                   | Contents                                                                   |
+| ----------------------- | -------------------------------------------------------------------------- |
+| trips                   | Trip names and date ranges                                                 |
+| steps                   | Steps linked to trips, including notes, dates, coordinates and photo paths |
+| cached_countries        | Country data downloaded from the API                                       |
+| daily_country_selection | Selected country codes and the selection date                              |
+| favourite_countries     | Saved favourite destinations                                               |
+
+Photos are stored in the app's document directory. The database stores their file paths.
 
 ## Navigation
 
