@@ -1,14 +1,10 @@
 import { useTheme } from "@/hooks/use-theme";
-import { getPlaceName } from "@/services/nativeFeatures";
 import { useTripStore } from "@/store/tripStore";
 import { formatDisplayDate } from "@/utils/date";
-
+import { usePlaceName } from "@/hooks/use-place-name";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StepDetailsScreen() {
@@ -20,35 +16,10 @@ export default function StepDetailsScreen() {
     state.steps.find((item) => item.id === id),
   );
 
-  const [placeName, setPlaceName] = useState<string | null>(null);
-
   const latitude = step?.latitude;
   const longitude = step?.longitude;
 
-  useEffect(() => {
-    if (latitude == null || longitude == null) {
-      setPlaceName(null);
-      return;
-    }
-
-    let active = true;
-
-    setPlaceName(null);
-
-    async function loadPlaceName() {
-      const place = await getPlaceName(latitude!, longitude!);
-
-      if (active) {
-        setPlaceName(place);
-      }
-    }
-
-    loadPlaceName();
-
-    return () => {
-      active = false;
-    };
-  }, [latitude, longitude]);
+  const placeName = usePlaceName(latitude, longitude);
 
   if (!step) {
     return (

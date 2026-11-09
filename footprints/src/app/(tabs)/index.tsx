@@ -2,7 +2,6 @@ import { TripCard } from "@/components/TripCard";
 import {
   BottomTabInset,
   BorderRadius,
-  FontSize,
   IconSize,
   Spacing,
 } from "@/constants/theme";

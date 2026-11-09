@@ -12,8 +12,8 @@ jest.mock("@/hooks/use-theme", () => ({
 }));
 
 jest.mock("../../src/components/FootprintsLogo", () => {
-  const { View } = require("react-native");
-
+  const { View } =
+    jest.requireActual<typeof import("react-native")>("react-native");
   return {
     __esModule: true,
     default: () => <View testID="footprints-logo" />,

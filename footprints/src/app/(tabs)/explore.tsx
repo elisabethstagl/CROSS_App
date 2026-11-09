@@ -41,24 +41,6 @@ export default function ExploreScreen() {
     }, [db, fetchCountries]),
   );
 
-  {
-    error && recommendations.length > 0 && (
-      <Text
-        accessibilityLiveRegion="polite"
-        style={[
-          styles.message,
-          {
-            color: colors.error,
-            marginBottom: Spacing.three,
-          },
-        ]}
-      >
-        Could not update recommendations. Your previous selection is still
-        shown.
-      </Text>
-    );
-  }
-
   const showLoading = loading && recommendations.length === 0;
 
   const showError = !!error && recommendations.length === 0;
@@ -75,6 +57,22 @@ export default function ExploreScreen() {
             subtitle="Find inspiration for your next adventure."
           />
         </View>
+
+        {error && recommendations.length > 0 && (
+          <Text
+            accessibilityLiveRegion="polite"
+            style={[
+              styles.message,
+              {
+                color: colors.error,
+                marginBottom: Spacing.three,
+              },
+            ]}
+          >
+            Could not update recommendations. Your previous selection is still
+            shown.
+          </Text>
+        )}
 
         {showLoading ? (
           <View style={styles.center}>

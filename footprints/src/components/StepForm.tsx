@@ -1,19 +1,17 @@
 import { useTheme } from "@/hooks/use-theme";
 import type { Step } from "@/types/Step";
 import { formatDisplayDate, toStorageDate } from "@/utils/date";
-
+import { usePlaceName } from "@/hooks/use-place-name";
 import {
   deleteStepPhoto,
   getCurrentStepLocation,
-  getPlaceName,
   saveStepPhoto,
   takeStepPhoto,
 } from "@/services/nativeFeatures";
-
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { Image } from "expo-image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -59,8 +57,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
   const [longitude, setLongitude] = useState<number | undefined>(
     initialValues?.longitude,
   );
-  const [placeName, setPlaceName] = useState<string | null>(null);
-
+  const placeName = usePlaceName(latitude, longitude);
   const [photoUri, setPhotoUri] = useState<string | undefined>(
     initialValues?.photoUri,
   );
@@ -79,30 +76,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
     backgroundColor: colors.surface,
     borderColor: colors.outline,
   };
-
-  useEffect(() => {
-    if (latitude == null || longitude == null) {
-      setPlaceName(null);
-      return;
-    }
-
-    let active = true;
-    setPlaceName(null);
-
-    async function loadPlaceName() {
-      const place = await getPlaceName(latitude!, longitude!);
-
-      if (active) {
-        setPlaceName(place);
-      }
-    }
-
-    loadPlaceName();
-
-    return () => {
-      active = false;
-    };
-  }, [latitude, longitude]);
 
   async function handleGetLocation() {
     if (busy) return;
@@ -159,7 +132,6 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
 
     setLatitude(undefined);
     setLongitude(undefined);
-    setPlaceName(null);
   }
 
   async function handleSaveStep() {

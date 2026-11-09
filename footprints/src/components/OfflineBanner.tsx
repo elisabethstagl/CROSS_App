@@ -23,7 +23,7 @@ export default function OfflineBanner() {
         accessibilityLiveRegion="polite"
         style={[styles.text, { color: colors.onPrimaryContainer }]}
       >
-        You're offline. Some features may be limited.
+        {"You're offline. Some features may be limited."}{" "}
       </Text>
     </SafeAreaView>
   );

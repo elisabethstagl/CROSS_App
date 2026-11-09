@@ -15,16 +15,16 @@ jest.mock("@/hooks/use-theme", () => ({
 }));
 
 jest.mock("@react-native-vector-icons/material-icons", () => {
-  const { View } = require("react-native");
-
+  const { View } =
+    jest.requireActual<typeof import("react-native")>("react-native");
   return {
     MaterialIcons: () => <View />,
   };
 });
 
 jest.mock("expo-image", () => {
-  const { View } = require("react-native");
-
+  const { View } =
+    jest.requireActual<typeof import("react-native")>("react-native");
   return {
     Image: (props: any) => (
       <View testID="step-photo" accessibilityLabel={props.accessibilityLabel} />

@@ -1,4 +1,3 @@
-import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Spacing } from "@/constants/theme";
