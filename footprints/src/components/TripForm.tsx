@@ -184,7 +184,7 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
         </Pressable>
 
         {activeDateField !== null && (
-          <View>
+          <>
             <DateTimePicker
               key={activeDateField}
               value={pickerValue(
@@ -218,7 +218,7 @@ export function TripForm({ initialValues, onSubmit }: TripFormProps) {
                 </Text>
               </Pressable>
             )}
-          </View>
+          </>
         )}
 
         <View style={styles.errorContainer}>

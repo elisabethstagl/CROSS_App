@@ -286,7 +286,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
         </Pressable>
 
         {showDatePicker && (
-          <View>
+          <>
             <DateTimePicker
               value={date ?? new Date()}
               mode="date"
@@ -319,7 +319,7 @@ export function StepForm({ initialValues, onSubmit }: StepFormProps) {
                 </Text>
               </Pressable>
             )}
-          </View>
+          </>
         )}
 
         <Text style={[styles.label, { color: colors.text }]}>Location</Text>
